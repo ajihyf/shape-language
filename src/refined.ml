@@ -326,7 +326,7 @@ and check_function if_clause fn_env local_env expr =
 		| EFun(param_list, maybe_return_r_ty, body_expr) ->
 				Smt.push_pop (fun () ->
 					let param_r_ty_list = List.map
-						(function 
+						(function
 							| (name, ty, None) ->
 									declare_var name ty ;
 									Named(name, ty)
@@ -381,7 +381,7 @@ let global_fn_env =
 let declare_uninterpreted_function fn_name fn_ty =
 	(* Declares an uninterpreted symbol, for example
 
-	     length : forall[t] (a : array[t]) -> (l : int if l >= 0)
+	     length : forall[t] (a : array[t]) -> (l : int | l >= 0)
 
 	   is translated into
 

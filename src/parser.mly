@@ -35,6 +35,7 @@ let replace_ty_constants_with_vars var_name_list ty =
 %token LPAREN RPAREN LBRACKET RBRACKET
 %token ARROW EQUALS COMMA COLON
 %token PLUS MINUS STAR SLASH PERCENT
+%token BAR
 %token GT LT GE LE EQ NE
 %token EOF
 
@@ -63,7 +64,7 @@ ty_forall_eof:
 expr:
 	| boolean_expr                                { $1 }
 	| simple_expr COLON ty                        { SCast($1, $3, None) }
-	| simple_expr COLON ty IF expr                { SCast($1, $3, Some $5) }
+	| simple_expr COLON ty BAR expr                { SCast($1, $3, Some $5) }
 	| LET IDENT EQUALS expr IN expr               { SLet($2, $4, $6) }
 	| fun_expr                                    { $1 }
 	| IF expr THEN expr ELSE expr                 { SIf($2, $4, $6) }
@@ -122,12 +123,12 @@ param_list:
 param:
 	| IDENT                       { ($1, None) }
 	| IDENT COLON ty              { ($1, Some ($3, None)) }
-	| IDENT COLON ty IF expr      { ($1, Some ($3, Some $5)) }
+	| IDENT COLON ty BAR expr      { ($1, Some ($3, Some $5)) }
 
 return_ty:
 	| some_simple_ty                          { Plain $1 }
 	| LPAREN IDENT COLON ty RPAREN            { Named($2, $4) }
-	| LPAREN IDENT COLON ty IF expr RPAREN    { Refined($2, $4, $6) }
+	| LPAREN IDENT COLON ty BAR expr RPAREN    { Refined($2, $4, $6) }
 
 ident_list:
 	| IDENT               { [$1] }
@@ -164,7 +165,7 @@ param_ty:
 
 refined_ty:
 	| IDENT COLON ty            { Named($1, $3) }
-	| IDENT COLON ty IF expr    { Refined($1, $3, $5) }
+	| IDENT COLON ty BAR expr    { Refined($1, $3, $5) }
 
 some_simple_ty:
 	| simple_ty                                                 { $1 }
@@ -176,7 +177,7 @@ simple_ty:
 	| IDENT                                         { TConst $1 }
 	| IDENT LBRACKET ty_comma_list RBRACKET         { TApp($1, $3) }
 	| LPAREN ty RPAREN                              { $2 }
-	
+
 ty_comma_list:
 	| ty                        { [$1] }
 	| ty COMMA ty_comma_list    { $1 :: $3 }

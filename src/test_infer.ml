@@ -55,15 +55,15 @@ let test_infer = [
 	("let apply_curry = fun f -> fun x -> f(x) in apply_curry", OK "forall[a b] (a -> b) -> a -> b");
 
 	(* type-checking contracts *)
-	("let g = fun(f : int -> int if f(true) == 1) -> 1 in g", error "cannot unify types int and bool");
+	("let g = fun(f : int -> int | f(true) == 1) -> 1 in g", error "cannot unify types int and bool");
 	("choose(length, length)", OK "forall[a] array[a] -> int");
-	("1 : int if 1 > 0", OK "int");
-	("1 : int if 1 + 0", error "cannot unify types int and bool");
-	("fun(x : some[a] a if x, y : some[a] a) : (z : bool if y) -> x", OK " (bool, bool) -> bool");
-	("fun(a) : (f : int -> int if f(a) == 1) -> fun b -> 1", OK "int -> int -> int");
+	("1 : int | 1 > 0", OK "int");
+	("1 : int | 1 + 0", error "cannot unify types int and bool");
+	("fun(x : some[a] a | x, y : some[a] a) : (z : bool | y) -> x", OK " (bool, bool) -> bool");
+	("fun(a) : (f : int -> int | f(a) == 1) -> fun b -> 1", OK "int -> int -> int");
 	("let const_1 = make_const(1) in const_1", OK "forall[a] a -> int");
 	(* This one ideally shouldn't fail, but this system doesn't permit duplicate variables. *)
-	("let x = 0 in fac : (x : int if x >= 0) -> int", fail);
+	("let x = 0 in fac : (x : int | x >= 0) -> int", fail);
 	]
 
 let test_infer_and_syntax = [
@@ -71,9 +71,9 @@ let test_infer_and_syntax = [
 		arguments already have known types, so in all these test cases all parameters
 		must have fully annotated types. *)
 	("fun(x : int) -> x + 1", OK "int -> int");
-	("fun() : ((x : int if x > 0) -> int) -> id", OK "() -> int -> int");
-	("fun() : (x : int if x > 0) -> 1", OK "() -> int");
-	("fun(a : int) : (f : int -> int if f(a) == 1) -> fun(b : int) -> 1", OK "int -> int -> int");
+	("fun() : ((x : int | x > 0) -> int) -> id", OK "() -> int -> int");
+	("fun() : (x : int | x > 0) -> 1", OK "() -> int");
+	("fun(a : int) : (f : int -> int | f(a) == 1) -> fun(b : int) -> 1", OK "int -> int -> int");
 ]
 
 

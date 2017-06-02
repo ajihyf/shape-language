@@ -34,7 +34,7 @@ let rec string_of_ty_with_var_names string_of_expr ty =
 					| Plain ty -> simple_ty ty
 					| Named(name, ty) -> name ^ " : " ^ complex_ty ty
 					| Refined(name, ty, expr) ->
-							name ^ " : " ^ complex_ty ty ^ " if " ^ string_of_expr expr
+							name ^ " : " ^ complex_ty ty ^ " | " ^ string_of_expr expr
 				in
 				let param_r_ty_list_str = match param_r_ty_list with
 					| [Plain ty] -> simple_ty ty
@@ -44,7 +44,7 @@ let rec string_of_ty_with_var_names string_of_expr ty =
 					| Plain ty -> complex_ty ty
 					| Named(name, ty) -> "(" ^ name ^ " : " ^ complex_ty ty ^ ")"
 					| Refined(name, ty, expr) ->
-							"(" ^ name ^ " : " ^ complex_ty ty ^ " if " ^ string_of_expr expr ^ ")"
+							"(" ^ name ^ " : " ^ complex_ty ty ^ " | " ^ string_of_expr expr ^ ")"
 				in
 				param_r_ty_list_str ^ " -> " ^ return_r_ty_str
 		| TVar {contents = Link ty} -> complex_ty ty
@@ -99,7 +99,7 @@ and string_of_s_expr expr : string =
 					| (name, None) -> name
 					| (name, Some (ty, None)) -> name ^ " : " ^ string_of_s_ty_ann ty
 					| (name, Some (ty, Some contract_expr)) ->
-							name ^ " : " ^ string_of_s_ty_ann ty ^ " if " ^ complex_expr contract_expr
+							name ^ " : " ^ string_of_s_ty_ann ty ^ " | " ^ complex_expr contract_expr
 				in
 				let param_list_str = String.concat ", " (List.map string_of_param param_list) in
 				let return_r_ty_str = match maybe_return_r_ty with
@@ -113,7 +113,7 @@ and string_of_s_expr expr : string =
 											string_of_s_ty_ann ty
 								| Named(name, ty) -> "(" ^ name ^ " : " ^ string_of_s_ty_ann ty ^ ")"
 								| Refined(name, ty, expr) ->
-										"(" ^ name ^ " : " ^ string_of_s_ty_ann ty ^ " if " ^ string_of_s_expr expr ^ ")"
+										"(" ^ name ^ " : " ^ string_of_s_ty_ann ty ^ " | " ^ string_of_s_expr expr ^ ")"
 						end
 				in
 				"fun(" ^ param_list_str ^ ")" ^ return_r_ty_str ^ " -> " ^ complex_expr body_expr
@@ -125,7 +125,7 @@ and string_of_s_expr expr : string =
 				" else " ^ complex_expr else_expr
 		| SCast(expr, ty, None) -> simple_expr expr ^ " : " ^ string_of_s_ty_ann ty
 		| SCast(expr, ty, Some contract_expr) ->
-				simple_expr expr ^ " : " ^ string_of_s_ty_ann ty ^ " if " ^ complex_expr contract_expr
+				simple_expr expr ^ " : " ^ string_of_s_ty_ann ty ^ " | " ^ complex_expr contract_expr
 		| expr -> simple_expr expr
 
 	and simple_expr = function
@@ -164,7 +164,7 @@ and string_of_t_expr expr : string =
 				let string_of_param = function
 					| (name, ty, None) -> name ^ " : " ^ string_of_t_ty_ann ty
 					| (name, ty, Some contract_expr) ->
-							name ^ " : " ^ string_of_t_ty_ann ty ^ " if " ^ complex_expr contract_expr
+							name ^ " : " ^ string_of_t_ty_ann ty ^ " | " ^ complex_expr contract_expr
 				in
 				let param_list_str = String.concat ", " (List.map string_of_param param_list) in
 				let return_r_ty_str = match maybe_return_r_ty with
@@ -178,7 +178,7 @@ and string_of_t_expr expr : string =
 											string_of_t_ty_ann ty
 								| Named(name, ty) -> "(" ^ name ^ " : " ^ string_of_t_ty_ann ty ^ ")"
 								| Refined(name, ty, expr) ->
-										"(" ^ name ^ " : " ^ string_of_t_ty_ann ty ^ " if " ^ string_of_t_expr expr ^ ")"
+										"(" ^ name ^ " : " ^ string_of_t_ty_ann ty ^ " | " ^ string_of_t_expr expr ^ ")"
 						end
 				in
 				"fun(" ^ param_list_str ^ ")" ^ return_r_ty_str ^ " -> " ^ complex_expr body_expr
@@ -190,7 +190,7 @@ and string_of_t_expr expr : string =
 				" else " ^ complex_expr else_expr
 		| ECast(expr, ty, None) -> simple_expr expr ^ " : " ^ string_of_t_ty_ann ty
 		| ECast(expr, ty, Some contract_expr) ->
-				simple_expr expr ^ " : " ^ string_of_t_ty_ann ty ^ " if " ^ complex_expr contract_expr
+				simple_expr expr ^ " : " ^ string_of_t_ty_ann ty ^ " | " ^ complex_expr contract_expr
 		| _ -> simple_expr expr
 
 	and simple_expr expr = match expr.shape with

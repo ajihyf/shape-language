@@ -39,7 +39,7 @@ rule token = parse
 	| "->"    { ARROW }
 	| ','     { COMMA }
 	| ':'     { COLON }
-
+  | '|'     { BAR }
 	| '+'     { PLUS }
 	| '-'     { MINUS }
 	| '*'     { STAR }
@@ -52,7 +52,7 @@ rule token = parse
 	| "<="    { LE }
 	| "=="    { EQ }
 	| "!="    { NE }
-	
+
 	| eof     { EOF }
 	| _       { raise Error }
 
@@ -96,5 +96,5 @@ let string_of_token = function
 	| EQ -> "=="
 	| NE -> "!="
 	| EOF -> "<eof>"
-
+  | BAR -> "|"
 }
