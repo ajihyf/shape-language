@@ -13,8 +13,8 @@ let test_cases = [
 		OK [LPAREN; RPAREN; RPAREN; IN; COMMA; IDENT "let_"; INT 1; IDENT "Ma"; ARROW;
 			COLON; EQ; EQUALS; PLUS; PLUS; MINUS; STAR; GE; GT; GT; LT; LE; NE; EQUALS;
 			NE; INT 5; PERCENT; SLASH]);
-	("let fun in some:forall rec and1 1and or not if then else true false 13452369",
-		OK [LET; FUN; IN; SOME; COLON; FORALL; REC; IDENT "and1"; INT 1; AND; OR; NOT; IF;
+	("let fun in some:forall and1 1and or not if then else true false 13452369",
+		OK [LET; FUN; IN; SOME; COLON; FORALL; IDENT "and1"; INT 1; AND; OR; NOT; IF;
 			THEN; ELSE; TRUE; FALSE; INT 13452369]);
 	(";", Fail);
 	]

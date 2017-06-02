@@ -30,7 +30,7 @@ let replace_ty_constants_with_vars var_name_list ty =
 
 %token <string> IDENT
 %token <int> INT
-%token FUN LET REC IN FORALL SOME
+%token FUN LET IN FORALL SOME FIX
 %token AND OR NOT IF THEN ELSE TRUE FALSE
 %token LPAREN RPAREN LBRACKET RBRACKET
 %token ARROW EQUALS COMMA COLON
