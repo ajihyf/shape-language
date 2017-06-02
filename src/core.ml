@@ -32,7 +32,14 @@ let uninterpreted = [
 ]
 
 let primitives = [
-  ("rect", "(l: int, t: int, w: int, h: int) -> (s: shape | left(s)==l)");
+  ("my_min", "(a: int, b: int) -> (c: int | c==(if a > b then b else a))");
+  ("my_max", "(a: int, b: int) -> (c: int | c==(if a > b then a else b))");
+  ("my_abs", "(a: int) -> (c: int | c==(if a >=0 then a else -a))");
+
+  ("line", "(p1x: int | p1x >= 0, p1y: int | p1y >= 0, p2x: int | p2x >= 0, p2y: int | p2y >= 0) ->
+    (s: shape | (left(s)==my_min(p1x,p2x) and top(s)==my_min(p1y,p2y)) and (width(s)==my_abs(p2x-p1x) and height(s)==my_abs(p2y-p1y)))");
+  ("rect", "(l: int | l >= 0, t: int | t >= 0, w: int | w >= 0, h: int | h >= 0) -> (s: shape | (left(s)==l and top(s)==t) and (width(s)==w and height(s)==h))");
+
   ("get", "forall[t] (a : array[t], i : int | i >= 0 and i < length(a)) -> t");
   ("alloc", "forall[t] (i : int) -> (a : array[t] | length(a) == i)");
   ("memcpy", "(dst : array[byte], src : array[byte],

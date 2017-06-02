@@ -211,7 +211,10 @@ let test_cases = [
   ("succ : (x : int | x > 0) -> (y : int | y > 1) | succ(0) == 2", wrong);
   ("succ : (x : int | x > 0) -> (y : int | y > 2) | succ(0) == 1", wrong);
   ("fun (a: int -> int) -> (fun (b: int) -> a(1) + b)", OK);
-  ("let r = rect(10, 10, 10, 10) in r: shape | left(r) == 10", OK);
+  ("let r = rect(1, 2, 3, 4) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 3 and height(r) == 4)", OK);
+  ("let r = rect(1, 2, 3, 4) in r: shape | (left(r) == 2 and top(r) == 2) and (width(r) == 3 and height(r) == 4)", wrong);
+  ("let r = line(1, 2, 3, 4) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 2 and height(r) == 2)", OK);
+  ("let r = line(1, 2, 3, 4) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 3 and height(r) == 3)", wrong);
 ]
 
 
