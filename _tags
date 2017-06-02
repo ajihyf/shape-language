@@ -1,0 +1,4 @@
+true:   bin_annot, debug
+true:   package(ounit)
+
+<src>: include
