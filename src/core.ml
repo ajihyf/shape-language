@@ -23,11 +23,16 @@ let builtins = [
 ]
 
 let uninterpreted = [
+  ("left", "(s: shape) -> (l: int | l >= 0)");
+  ("top", "(s: shape) -> (l: int | l >= 0)");
+  ("width", "(s: shape) -> (l: int | l >= 0)");
+  ("height", "(s: shape) -> (l: int | l >= 0)");
   ("length", "forall[t] (a : array[t]) -> (l : int | l >= 0)");
   ("is_prime", "(i : int | i >= 1) -> bool");
 ]
 
 let primitives = [
+  ("rect", "(l: int, t: int, w: int, h: int) -> (s: shape | left(s)==l)");
   ("get", "forall[t] (a : array[t], i : int | i >= 0 and i < length(a)) -> t");
   ("alloc", "forall[t] (i : int) -> (a : array[t] | length(a) == i)");
   ("memcpy", "(dst : array[byte], src : array[byte],

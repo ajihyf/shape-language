@@ -211,6 +211,7 @@ let test_cases = [
   ("succ : (x : int | x > 0) -> (y : int | y > 1) | succ(0) == 2", wrong);
   ("succ : (x : int | x > 0) -> (y : int | y > 2) | succ(0) == 1", wrong);
   ("fun (a: int -> int) -> (fun (b: int) -> a(1) + b)", OK);
+  ("let r = rect(10, 10, 10, 10) in r: shape | left(r) == 10", OK);
 ]
 
 
