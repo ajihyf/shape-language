@@ -13,6 +13,8 @@ OCB_FLAGS = -use-ocamlfind             -I src  # uses ocamlyacc
 
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
+default: build
+
 clean:
 			$(OCB) -clean
 

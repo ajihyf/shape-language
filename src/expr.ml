@@ -22,7 +22,7 @@ and 'a tvar =
 
 
 let t_bool = TConst "bool"
-
+let t_shape = TConst "shape"
 
 let rec real_ty = function
   | TVar {contents = Link ty} -> real_ty ty
