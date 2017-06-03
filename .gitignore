@@ -2,6 +2,7 @@
 _build/
 
 *.byte
+*.log
 
 oUnit-*.log
 oUnit-*.cache
