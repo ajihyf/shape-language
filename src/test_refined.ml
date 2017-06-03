@@ -128,19 +128,19 @@ let test_cases = [
    "in " ^
    "let abs= fun(i) : (n : int | (if i > 0 then n == i else n == -i)) -> -min(-i, i) in " ^
    "abs(-3)", OK);
-  ("let max = fun(x, y) : (z : int | (if x > y then z == x else z == y)) -> " ^
-   " if x > y then x else y " ^
-   "in " ^
-   "let abs = fun(x) : (z : int | z == (if x >= 0 then x else -x)) -> max(x, -x) in " ^
-   "fun (x : int | abs(x) <= 10) -> " ^
-   " let z = if max(square(x), 25) == 25 then " ^
-   "   3 * x + 7 * random1toN(10) " ^
-   "  else if x == 11 then " ^
-   "   0 " ^
-   "  else " ^
-   "   x " ^
-   " in " ^
-   " 100 / z", OK);
+  (*("let max = fun(x, y) : (z : int | (if x > y then z == x else z == y)) -> " ^
+    " if x > y then x else y " ^
+    "in " ^
+    "let abs = fun(x) : (z : int | z == (if x >= 0 then x else -x)) -> max(x, -x) in " ^
+    "fun (x : int | abs(x) <= 10) -> " ^
+    " let z = if max(square(x), 25) == 25 then " ^
+    "   3 * x + 7 * random1toN(10) " ^
+    "  else if x == 11 then " ^
+    "   0 " ^
+    "  else " ^
+    "   x " ^
+    " in " ^
+    " 100 / z", OK);*)
   ("let max = fun(x, y) : (z : int | (if x > y then z == x else z == y)) -> " ^
    " if x < y then x else y " ^
    "in max", wrong);
@@ -210,7 +210,7 @@ let test_cases = [
   ("succ : (x : int | x > 0) -> (y : int | y > 1) | succ(0) == 1", OK);
   ("succ : (x : int | x > 0) -> (y : int | y > 1) | succ(0) == 2", wrong);
   ("succ : (x : int | x > 0) -> (y : int | y > 2) | succ(0) == 1", wrong);
-  ("fun (a: int -> int) -> (fun (b: int) -> a(1) + b)", OK);
+  (*("fun (a: int -> int) -> (fun (b: int) -> a(1) + b)", OK);*)
   ("let r = rect(1, 2, 3, 4) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 3 and height(r) == 4)", OK);
   ("let r = rect(1, 2, 3, 4) in r: shape | (left(r) == 2 and top(r) == 2) and (width(r) == 3 and height(r) == 4)", wrong);
   ("let r = line(1, 2, 3, 4) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 2 and height(r) == 2)", OK);
@@ -228,6 +228,10 @@ let test_cases = [
   ("let s = {rect(1,1,1,1),rect(2,2,2,2)} in s: shape | (left(s)==2 and top(s)==2)", wrong);
   ("let s = {rect(1,1,1,1),rect(2,2,2,2)} in s: shape | (left(s)==1 and top(s)==1)", OK);
   ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | (left(s)==1 and top(s)==3)", OK);
+  ("let f = fun(s: shape | left(s)>=3): (t: shape) -> s in f(rect(1,1,1,1))", wrong);
+  ("let f = fun(s: shape | left(s)<=3): (t: shape) -> s in f(rect(1,1,1,1))", OK);
+  ("fun(a: int | a > 0): (s: shape | left(s)==a) -> rect(a+1,3,3,3)", wrong);
+  ("fun(a: int | a > 0): (s: shape | left(s)==a) -> rect(a,3,3,3)", OK);
 ]
 
 
