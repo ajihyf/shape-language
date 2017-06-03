@@ -64,6 +64,8 @@ let test_infer = [
   ("let const_1 = make_const(1) in const_1", OK "forall[a] a -> int");
   (* This one ideally shouldn't fail, but this system doesn't permit duplicate variables. *)
   ("let x = 0 in fac : (x : int | x >= 0) -> int", fail);
+  ("{rect(1,2,3,4),1}", fail);
+  ("{rect(1,2,3,4),line(1,2,3,4)}", OK "shape");
 ]
 
 let test_infer_and_syntax = [

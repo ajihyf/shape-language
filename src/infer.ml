@@ -181,6 +181,15 @@ let rec infer_expr env level = function
       | Some contract_s_expr -> Some (infer_contract env level contract_s_expr)
     in
     {shape = ECast(t_expr, instantiated_t_ty, maybe_contract_t_expr); ty = plain_t_ty}
+  | SFix(_) -> error "not implemented"
+  | SShape(shape_list) ->
+    let shape_t_list = List.map (fun shape_expr ->
+        let shape_t_expr = infer_expr env level shape_expr in
+        unify t_shape shape_t_expr.ty;
+        shape_t_expr)
+        shape_list
+    in
+    {shape = EShape(shape_t_list); ty = t_shape}
 
 and instantiate_and_infer_ty env level ty = infer_ty env level (instantiate level ty)
 

@@ -220,7 +220,14 @@ let test_cases = [
   ("let r = circle(1, 2, 3) in r: shape", wrong);
   ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 2) and (width(r) == 1 and height(r) == 1)", wrong);
   ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 1) and (width(r) == 1 and height(r) == 1)", OK);
-  ("let r = eclipse(2, 2, 2, 1) in r: shape | (left(r) == 0 and top(r) == 1) and (width(r) == 4 and height(r) == 1)", wrong);
+<<<<<<< HEAD
+=======
+
+  ("let s = {rect(1,2,3,4)} in s: shape", OK);
+  ("let s = {rect(1,2,3,4)} in s: shape | (width(s)<=1)", wrong);
+  ("let s = {rect(1,2,3,4)} in s: shape | (top(s)==1)", wrong);
+  ("let s = {rect(1,2,3,4)} in s: shape | (left(s)==1 and top(s)==2)", OK);
+>>>>>>> 5320ccfefe7d1a0646c26675f31e7b32dd2687a6
 ]
 
 
