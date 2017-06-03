@@ -133,9 +133,9 @@ let assert_false translated_expr = Smt.write ("(assert (not " ^ translated_expr 
 let assert_eq translated_expr1 translated_expr2 =
   assert_true ("(= " ^ translated_expr1 ^ " " ^ translated_expr2 ^ ")")
 
-let combine_shape_attr min_max attr translated_shape_list =
+let combine_shape_attr min_max attrfn translated_shape_list =
   let rec f = function
-      [hd] -> "(" ^ attr ^ " " ^ hd ^ ")"
+      [hd] -> "(" ^ (attrfn hd) ^ ")"
     | hd :: rs -> min_max (f [hd]) (f rs)
     | [] -> error "should not be empty"
   in f translated_shape_list
@@ -147,10 +147,14 @@ let z3_max e1 e2 =
   "(ite " ^ "(>= " ^ e1 ^ " " ^ e2 ^ ")" ^ " " ^ e1 ^ " " ^ e2 ^ ")"
 
 let assert_shape_has target shapes =
-  let left_str = (combine_shape_attr z3_min "left" shapes) in
-  let top_str = (combine_shape_attr z3_min "top" shapes) in
-  assert_eq ("(left " ^ target ^ ")")  left_str;
-  assert_eq ("(top " ^ target ^ ")") top_str
+  let left_str = (combine_shape_attr z3_min (fun hd -> "left " ^ hd) shapes) in
+  let top_str = (combine_shape_attr z3_min (fun hd -> "top " ^ hd) shapes) in
+  let bottom_str = (combine_shape_attr z3_max (fun hd -> "+ (top " ^ hd ^ ") (height " ^ hd ^ ")") shapes) in
+  let right_str = (combine_shape_attr z3_max (fun hd -> "+ (left " ^ hd ^ ") (width " ^ hd ^ ")") shapes) in
+  assert_eq ("(left " ^ target ^ ")") left_str;
+  assert_eq ("(top " ^ target ^ ")") top_str;
+  assert_eq ("(+ (left " ^ target ^ ") (width " ^ target ^ "))") right_str;
+  assert_eq ("(+ (top " ^ target ^ ") (height " ^ target ^ "))") bottom_str
 
 let rec check_contract if_clause fn_env local_env contract_expr =
   Smt.push_pop (fun () ->
