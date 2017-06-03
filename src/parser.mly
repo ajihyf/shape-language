@@ -32,7 +32,7 @@ let replace_ty_constants_with_vars var_name_list ty =
 %token <int> INT
 %token FUN LET IN FORALL SOME FIX
 %token AND OR NOT IF THEN ELSE TRUE FALSE
-%token LPAREN RPAREN LBRACKET RBRACKET
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token ARROW EQUALS COMMA COLON
 %token PLUS MINUS STAR SLASH PERCENT
 %token BAR
@@ -96,6 +96,7 @@ simple_expr:
 	| LPAREN expr RPAREN                                { $2 }
 	| simple_expr LPAREN expr_comma_list RPAREN         { SCall($1, $3) }
 	| simple_expr LPAREN RPAREN                         { SCall($1, []) }
+  | LBRACE expr_comma_list RBRACE                     { SShape($2) }
 
 expr_comma_list:
 	| expr                          { [$1] }

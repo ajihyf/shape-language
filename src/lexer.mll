@@ -35,6 +35,8 @@ rule token = parse
 	| ')'     { RPAREN }
 	| '['     { LBRACKET }
 	| ']'     { RBRACKET }
+  | '{'     { LBRACE }
+  | '}'     { RBRACE }
 	| '='     { EQUALS }
 	| "->"    { ARROW }
 	| ','     { COMMA }
@@ -78,6 +80,8 @@ let string_of_token = function
 	| INT i -> string_of_int i
 	| LPAREN -> "("
 	| RPAREN -> ")"
+  | LBRACE -> "{"
+  | RBRACE -> "}"
 	| LBRACKET -> "["
 	| RBRACKET -> "]"
 	| EQUALS -> "="
