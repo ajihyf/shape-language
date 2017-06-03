@@ -219,7 +219,7 @@ let test_cases = [
   ("let r = triangle(1, 2, 3, 4, 5, 6) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 4 and height(r) == 4)", OK);
   ("let r = circle(1, 2, 3) in r: shape", wrong);
   ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 2) and (width(r) == 1 and height(r) == 1)", wrong);
-  ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 1) and (width(r) == 1 and height(r) == 1)", OK);
+  ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 1) and (width(r) == 2 and height(r) == 2)", OK);
 
   ("let s = {rect(1,2,3,4)} in s: shape", OK);
   ("let s = {rect(1,2,3,4)} in s: shape | (width(s)<=1)", wrong);
