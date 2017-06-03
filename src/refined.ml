@@ -387,7 +387,7 @@ let declare_uninterpreted_function fn_name fn_ty =
 
      (declare-fun length (Other) Int)
      (assert (forall ((a Other)) (>= (length a) 0)))
-     *)
+  *)
   match real_ty fn_ty with
   | TArrow(param_r_ty_list, return_r_ty) -> begin
       let translated_param_list =
