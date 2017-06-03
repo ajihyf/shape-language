@@ -145,6 +145,8 @@ and string_of_s_expr expr : string =
       end
     | SCall(fn_expr, arg_expr_list) ->
       simple_expr fn_expr ^ "(" ^ String.concat ", " (List.map complex_expr arg_expr_list) ^ ")"
+    (*| SRect(l, t, w, h) ->
+      "rect(" ^ complex_expr l ^ ", " ^ complex_expr t ^ ", " ^ complex_expr w ^ ", " ^ complex_expr h ^ ")"*)
     | SShape(shape_expr_list) ->
       "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | expr -> "(" ^ complex_expr expr ^ ")"
@@ -212,6 +214,8 @@ and string_of_t_expr expr : string =
       end
     | ECall(fn_expr, arg_expr_list) ->
       simple_expr fn_expr ^ "(" ^ String.concat ", " (List.map complex_expr arg_expr_list) ^ ")"
+    (*| ERect(l, t, w, h) ->
+      "rect(" ^ complex_expr l ^ ", " ^ complex_expr t ^ ", " ^ complex_expr w ^ ", " ^ complex_expr h ^ ")"*)
     | EShape(shape_expr_list) ->
       "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | _ -> "(" ^ complex_expr expr ^ ")"

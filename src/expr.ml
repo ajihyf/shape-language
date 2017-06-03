@@ -82,6 +82,8 @@ and s_expr =
   | SIf of s_expr * s_expr * s_expr
   | SCast of s_expr * s_ty * s_expr option
   | SFix of s_expr
+  (*left top width height*)
+  (*| SRect of s_expr * s_expr * s_expr * s_expr  *)
   | SShape of s_expr list
 
 and s_param = name * (s_ty * s_expr option) option
@@ -104,6 +106,7 @@ and t_expr_shape =
   | ECast of t_expr * t_ty * t_expr option
   | EFix of name * t_expr
   | EShape of t_expr list
+  (*| ERect of t_expr * t_expr * t_expr * t_expr*)
 
 and t_param = name * t_ty * t_expr option
 

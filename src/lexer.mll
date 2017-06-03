@@ -28,6 +28,8 @@ rule token = parse
   | "true"        { TRUE }
   | "false"       { FALSE }
 
+  (*| "rect"        { RECT }*)
+
   | ident                 { IDENT (Lexing.lexeme lexbuf) }
   | integer               { INT (int_of_string (Lexing.lexeme lexbuf)) }
 
@@ -101,4 +103,5 @@ let string_of_token = function
   | NE -> "!="
   | EOF -> "<eof>"
   | BAR -> "|"
+  | RECT -> "rect"
 }

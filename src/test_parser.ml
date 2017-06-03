@@ -76,6 +76,8 @@ let test_cases = [
                                                                                                                                     [SInt 0]); SInt 1]))))], None, SInt 1)));
   ("{s1, s2}",
    OK (SShape([SVar "s1"; SVar "s2"])));
+
+  (*("rect(1,2,s1,s4)", OK (SRect(SInt 1, SInt 2, SVar "s1", SVar "s4")));*)
 ]
 
 

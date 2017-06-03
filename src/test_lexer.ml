@@ -18,6 +18,7 @@ let test_cases = [
   THEN; ELSE; TRUE; FALSE; INT 13452369]);
 (";", Fail);
 ("{s1,s2}", OK [LBRACE; IDENT "s1"; COMMA; IDENT "s2"; RBRACE]);
+(*("rect(1,2,s1,s4)", OK [RECT; LPAREN; INT 1; COMMA; INT 2; COMMA; IDENT "s1"; COMMA; IDENT "s4"; RPAREN])*)
 ]
 
 

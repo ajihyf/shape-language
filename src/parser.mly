@@ -38,6 +38,7 @@ let replace_ty_constants_with_vars var_name_list ty =
 %token BAR
 %token GT LT GE LE EQ NE
 %token EOF
+%token RECT
 
 %left PLUS MINUS
 %left STAR SLASH PERCENT
@@ -94,6 +95,7 @@ simple_expr:
   | TRUE                                              { SBool true }
   | FALSE                                             { SBool false }
   | LPAREN expr RPAREN                                { $2 }
+  /*| RECT LPAREN expr COMMA expr COMMA expr COMMA expr RPAREN   { SRect($3, $5, $7, $9) }*/
   | simple_expr LPAREN expr_comma_list RPAREN         { SCall($1, $3) }
   | simple_expr LPAREN RPAREN                         { SCall($1, []) }
   | LBRACE expr_comma_list RBRACE                     { SShape($2) }
