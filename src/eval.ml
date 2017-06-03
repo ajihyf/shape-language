@@ -21,6 +21,19 @@ let isval t =
     | SInt(_) -> true
     | _ -> false
 
+let rec is_true ctx t =
+    match t with
+      SBool(v) -> v
+    | SVar(name) -> is_true ctx (Ctx.lookup name ctx)
+    | _ -> false
+
+let rec is_false ctx t =
+    match t with
+      SBool(v) ->
+        if v then false else true
+    | SVar(name) -> is_false ctx (Ctx.lookup name ctx)
+    | _ -> false
+
 let rec eval1 ctx t =
     match t with
       SVar(name) ->
