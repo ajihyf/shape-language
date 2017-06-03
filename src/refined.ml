@@ -133,7 +133,18 @@ let assert_false translated_expr = Smt.write ("(assert (not " ^ translated_expr 
 let assert_eq translated_expr1 translated_expr2 =
   assert_true ("(= " ^ translated_expr1 ^ " " ^ translated_expr2 ^ ")")
 
+let combine_shape_attr min_max attr translated_shape_list =
+  let rec f = function
+      [hd] -> "(" ^ attr ^ " " ^ hd ^ ")"
+    | hd :: rs -> "(" ^ min_max ^ " " ^ f [hd] ^ " " ^ f rs ^ ")"
+    | [] -> "should not be empty"
+  in f translated_shape_list
 
+let assert_shape_has target shapes =
+  let left_str = (combine_shape_attr "my_min" "left" shapes) in
+  let top_str = (combine_shape_attr "my_min" "top" shapes) in
+  assert_eq ("(left " ^ target ^ ")")  left_str;
+  assert_eq ("(top " ^ target ^ ")") top_str
 
 let rec check_contract if_clause fn_env local_env contract_expr =
   Smt.push_pop (fun () ->
@@ -229,7 +240,6 @@ and check_function_call if_clause fn_env local_env fn_expr arg_expr_list =
   let translated_arg_expr_list = List.rev rev_translated_arg_expr_list in
   (return_r_ty, translated_arg_expr_list, new_closure_local_env)
 
-
 and check_value expected_result if_clause fn_env local_env expr =
   assert (not (is_function_ty expr.ty)) ;
   match expr.shape with
@@ -302,7 +312,17 @@ and check_value expected_result if_clause fn_env local_env expr =
     check_contract if_clause fn_env local_env contract_expr ;
     translated_expr
   | ECast(expr, ty, None) -> check_value expected_result if_clause fn_env local_env expr
-
+  | EShape(shape_list) ->
+    let var_name = declare_new_var expr.ty in
+    let child_shapes = List.map
+        (fun shape_expr ->
+           check_value Term if_clause fn_env local_env shape_expr
+        )
+        shape_list
+    in
+    assert_shape_has var_name child_shapes;
+    var_name
+  | EFix(_, _) -> error "not implemented"
 
 and check_function if_clause fn_env local_env expr =
   assert (is_function_ty expr.ty) ;
@@ -310,7 +330,7 @@ and check_function if_clause fn_env local_env expr =
   | EVar name ->
     (*assert (not ((StringSet.mem name builtins) || (StringSet.mem name uninterpreted))) ;*)
     FnEnv.lookup name fn_env
-  | EBool _ | EInt _ -> assert false
+  | EBool _ | EInt _ | EShape _ -> assert false
   | ECall(fn_expr, arg_expr_list) ->
     let (return_r_ty, translated_arg_expr_list, closure_local_env) =
       check_function_call if_clause fn_env local_env fn_expr arg_expr_list
@@ -364,6 +384,7 @@ and check_function if_clause fn_env local_env expr =
   | ECast(expr, ty, None) ->
     check_function_subtype if_clause fn_env local_env expr ty ;
     (LocalEnv.empty, ty)
+  | EFix(_, _) -> error "not implemented"
 
 
 
