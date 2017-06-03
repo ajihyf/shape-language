@@ -190,6 +190,18 @@ let rec infer_expr env level = function
         shape_list
     in
     {shape = EShape(shape_t_list); ty = t_shape}
+  | SRect(l, t, w, h) -> 
+    let [l; t; w; h] = List.map (infer_expr env level) [l; t; w; h] in
+    {shape = ERect(l, t, w, h); ty = TConst "shape"}
+  | SLine(p1x, p1y, p2x, p2y) -> 
+    let [p1x; p1y; p2x; p2y] = List.map (infer_expr env level) [p1x; p1y; p2x; p2y] in
+    {shape = ELine(p1x, p1y, p2x, p2y); ty = TConst "shape"}
+  | STriangle(p1x, p1y, p2x, p2y, p3x, p3y) -> 
+    let [p1x; p1y; p2x; p2y; p3x; p3y] = List.map (infer_expr env level) [p1x; p1y; p2x; p2y; p3x; p3y] in
+    {shape = ETriangle(p1x, p1y, p2x, p2y, p3x, p3y); ty = TConst "shape"}
+  | SCircle(cx, cy, r) -> 
+    let [cx; cy; r] = List.map (infer_expr env level) [cx; cy; r] in
+    {shape = ECircle(cx, cy, r); ty = TConst "shape"}
 
 and instantiate_and_infer_ty env level ty = infer_ty env level (instantiate level ty)
 

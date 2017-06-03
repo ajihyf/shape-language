@@ -218,8 +218,8 @@ let test_cases = [
   ("let r = triangle(1, 2, 3, 4, 5, 6) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 3 and height(r) == 3)", wrong);
   ("let r = triangle(1, 2, 3, 4, 5, 6) in r: shape | (left(r) == 1 and top(r) == 2) and (width(r) == 4 and height(r) == 4)", OK);
   ("let r = circle(1, 2, 3) in r: shape", wrong);
-  ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 2) and (width(r) == 1 and height(r) == 1)", wrong);
-  ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 1) and (width(r) == 1 and height(r) == 1)", OK);
+  ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 2) and (width(r) == 2 and height(r) == 2)", wrong);
+  ("let r = circle(3, 2, 1) in r: shape | (left(r) == 2 and top(r) == 1) and (width(r) == 2 and height(r) == 2)", OK);
 
   ("let s = {rect(1,2,3,4)} in s: shape", OK);
   ("let s = {rect(1,2,3,4)} in s: shape | (width(s)<=1)", wrong);
@@ -230,6 +230,13 @@ let test_cases = [
   ("let s = {rect(1,1,1,1),rect(2,2,2,2)} in s: shape | ((left(s)==1 and top(s)==1) and (width(s)==3 and height(s)==3))", OK);
   ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | ((left(s)==1 and top(s)==3) and (width(s)==2 and height(s)==2))", wrong);
   ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | ((left(s)==1 and top(s)==3) and (width(s)==3 and height(s)==3))", OK);
+
+  ("let s = rect(0,0,0,0) in s: shape", wrong);
+  ("let s = circle(1,1,2) in s: shape", wrong);
+  ("let s = rect(2,1+1,1,1) in s: shape | (left(s)==2 and top(s)==2)", OK);
+  ("let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,1+1,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
+
+  ("let a = 1+1 in let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,a,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
 ]
 
 
