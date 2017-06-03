@@ -136,13 +136,19 @@ let assert_eq translated_expr1 translated_expr2 =
 let combine_shape_attr min_max attr translated_shape_list =
   let rec f = function
       [hd] -> "(" ^ attr ^ " " ^ hd ^ ")"
-    | hd :: rs -> "(" ^ min_max ^ " " ^ f [hd] ^ " " ^ f rs ^ ")"
-    | [] -> "should not be empty"
+    | hd :: rs -> min_max (f [hd]) (f rs)
+    | [] -> error "should not be empty"
   in f translated_shape_list
 
+let z3_min e1 e2 =
+  "(ite " ^ "(>= " ^ e1 ^ " " ^ e2 ^ ")" ^ " " ^ e2 ^ " " ^ e1 ^ ")"
+
+let z3_max e1 e2 =
+  "(ite " ^ "(>= " ^ e1 ^ " " ^ e2 ^ ")" ^ " " ^ e1 ^ " " ^ e2 ^ ")"
+
 let assert_shape_has target shapes =
-  let left_str = (combine_shape_attr "my_min" "left" shapes) in
-  let top_str = (combine_shape_attr "my_min" "top" shapes) in
+  let left_str = (combine_shape_attr z3_min "left" shapes) in
+  let top_str = (combine_shape_attr z3_min "top" shapes) in
   assert_eq ("(left " ^ target ^ ")")  left_str;
   assert_eq ("(top " ^ target ^ ")") top_str
 

@@ -225,6 +225,9 @@ let test_cases = [
   ("let s = {rect(1,2,3,4)} in s: shape | (width(s)<=1)", wrong);
   ("let s = {rect(1,2,3,4)} in s: shape | (top(s)==1)", wrong);
   ("let s = {rect(1,2,3,4)} in s: shape | (left(s)==1 and top(s)==2)", OK);
+  ("let s = {rect(1,1,1,1),rect(2,2,2,2)} in s: shape | (left(s)==2 and top(s)==2)", wrong);
+  ("let s = {rect(1,1,1,1),rect(2,2,2,2)} in s: shape | (left(s)==1 and top(s)==1)", OK);
+  ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | (left(s)==1 and top(s)==3)", OK);
 ]
 
 
