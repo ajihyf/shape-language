@@ -5,7 +5,6 @@ exception Error
 module Ctx = struct
   module StringMap = Map.Make (String)
   type ctx = t_ty StringMap.t
-
   let empty : ctx = StringMap.empty
   let extend name v ctx =
     if StringMap.mem name ctx then raise Error else
@@ -17,30 +16,31 @@ end
 
 let isval t =
     match t with
-      SBool(_) -> true
+      SVar(_) -> true
+    | SBool(_) -> true
     | SInt(_) -> true
-    | _ -> false
-
-let is_true t =
-    match t with
-     SBool(v) -> if v then true else false
-    | _ -> false
-
-let is_false t =
-    match t with
-      SBool(v) -> if v then false else true
     | _ -> false
 
 let rec eval1 ctx t =
     match t with
-      SIf(SBool(v), t1, t2) ->
-        if v then t1 else t2
-    | SLet(name, t1, t2) when isval t1 ->
-        let new_ctx = Ctx.extend name t1 ctx in
-            eval1 new_ctx t2
-    | SLet(name, t1, t2) ->
+      SVar(name) ->
+        Ctx.lookup name ctx
+    | SIf(SBool(v), t2, t3) ->
+        if v then t2 else t3
+    | SIf(t1, t2, t3) ->
         let t1' = eval1 ctx t1 in
-            SLet(name, t1', t2)
+            SIf(t1', t2, t3)
+    | SLet(t1, t2, t3) when isval t2 ->
+        let new_ctx = Ctx.extend t1 t2 ctx in
+            eval1 new_ctx t3
+    | SLet(t1, t2, t3) ->
+        let t2' = eval1 ctx t2 in
+            SLet(t1, t2', t3)
+    | SCast(t1, t2, t3) when isval t1 ->
+        t1
+    | SCast(t1, t2, t3) ->
+        let t1' = eval1 ctx t1 in
+            SCast(t1', t2, t3)
     | _ -> raise Error
 
 let rec eval ctx t =

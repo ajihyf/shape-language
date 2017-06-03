@@ -22,7 +22,7 @@ and 'a tvar =
 
 
 let t_bool = TConst "bool"
-
+let t_shape = TConst "shape"
 
 let rec real_ty = function
   | TVar {contents = Link ty} -> real_ty ty
@@ -106,7 +106,6 @@ and t_expr_shape =
   | EShape of t_expr list
 
 and t_param = name * t_ty * t_expr option
-
 
 
 
