@@ -145,8 +145,14 @@ and string_of_s_expr expr : string =
       end
     | SCall(fn_expr, arg_expr_list) ->
       simple_expr fn_expr ^ "(" ^ String.concat ", " (List.map complex_expr arg_expr_list) ^ ")"
-    (*| SRect(l, t, w, h) ->
-      "rect(" ^ complex_expr l ^ ", " ^ complex_expr t ^ ", " ^ complex_expr w ^ ", " ^ complex_expr h ^ ")"*)
+    | SRect(l, t, w, h) ->
+      "rect(" ^ complex_expr l ^ ", " ^ complex_expr t ^ ", " ^ complex_expr w ^ ", " ^ complex_expr h ^ ")"
+    | SLine(p1x, p1y, p2x, p2y) ->
+      "line(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ")"
+    | STriangle(p1x, p1y, p2x, p2y, p3x, p3y) ->
+      "triangle(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ", " ^ complex_expr p3x ^ ", " ^ complex_expr p3y ^ ")"
+    | SCircle(cx, cy, r) ->
+      "circle(" ^ complex_expr cx ^ ", " ^ complex_expr cy ^ ", " ^ complex_expr r ^ ")"
     | SShape(shape_expr_list) ->
       "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | expr -> "(" ^ complex_expr expr ^ ")"
@@ -214,8 +220,14 @@ and string_of_t_expr expr : string =
       end
     | ECall(fn_expr, arg_expr_list) ->
       simple_expr fn_expr ^ "(" ^ String.concat ", " (List.map complex_expr arg_expr_list) ^ ")"
-    (*| ERect(l, t, w, h) ->
-      "rect(" ^ complex_expr l ^ ", " ^ complex_expr t ^ ", " ^ complex_expr w ^ ", " ^ complex_expr h ^ ")"*)
+    | ERect(l, t, w, h) ->
+      "rect(" ^ complex_expr l ^ ", " ^ complex_expr t ^ ", " ^ complex_expr w ^ ", " ^ complex_expr h ^ ")"
+    | ELine(p1x, p1y, p2x, p2y) ->
+      "line(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ")"
+    | ETriangle(p1x, p1y, p2x, p2y, p3x, p3y) ->
+      "triangle(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ", " ^ complex_expr p3x ^ ", " ^ complex_expr p3y ^ ")"
+    | ECircle(cx, cy, r) ->
+      "circle(" ^ complex_expr cx ^ ", " ^ complex_expr cy ^ ", " ^ complex_expr r ^ ")"
     | EShape(shape_expr_list) ->
       "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | _ -> "(" ^ complex_expr expr ^ ")"

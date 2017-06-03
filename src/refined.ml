@@ -333,6 +333,11 @@ and check_value expected_result if_clause fn_env local_env expr =
     assert_shape_has var_name child_shapes;
     var_name
   | EFix(_, _) -> error "not implemented"
+  | ERect(l, t, w, h) -> ""
+  | ELine(p1x, p1y, p2x, p2y) -> ""
+  | ETriangle(p1x, p1y, p2x, p2y, p3x, p3y) -> ""
+  | ECircle(cx, cy, r) -> ""
+  
 
 and check_function if_clause fn_env local_env expr =
   assert (is_function_ty expr.ty) ;
@@ -395,6 +400,7 @@ and check_function if_clause fn_env local_env expr =
     check_function_subtype if_clause fn_env local_env expr ty ;
     (LocalEnv.empty, ty)
   | EFix(_, _) -> error "not implemented"
+  | _ -> assert false
 
 
 

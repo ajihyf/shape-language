@@ -28,7 +28,10 @@ rule token = parse
   | "true"        { TRUE }
   | "false"       { FALSE }
 
-  (*| "rect"        { RECT }*)
+  | "rect"        { RECT }
+  | "line"        { LINE }
+  | "triangle"    { TRIANGLE }
+  | "circle"      { CIRCLE }
 
   | ident                 { IDENT (Lexing.lexeme lexbuf) }
   | integer               { INT (int_of_string (Lexing.lexeme lexbuf)) }
@@ -104,4 +107,7 @@ let string_of_token = function
   | EOF -> "<eof>"
   | BAR -> "|"
   | RECT -> "rect"
+  | LINE -> "line"
+  | TRIANGLE -> "triangle"
+  | CIRCLE -> "circle"
 }

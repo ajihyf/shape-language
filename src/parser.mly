@@ -39,6 +39,9 @@ let replace_ty_constants_with_vars var_name_list ty =
 %token GT LT GE LE EQ NE
 %token EOF
 %token RECT
+%token LINE
+%token TRIANGLE
+%token CIRCLE
 
 %left PLUS MINUS
 %left STAR SLASH PERCENT
@@ -65,7 +68,7 @@ ty_forall_eof:
 expr:
   | boolean_expr                                { $1 }
   | simple_expr COLON ty                        { SCast($1, $3, None) }
-  | simple_expr COLON ty BAR expr                { SCast($1, $3, Some $5) }
+  | simple_expr COLON ty BAR expr               { SCast($1, $3, Some $5) }
   | LET IDENT EQUALS expr IN expr               { SLet($2, $4, $6) }
   | fun_expr                                    { $1 }
   | IF expr THEN expr ELSE expr                 { SIf($2, $4, $6) }
@@ -90,15 +93,18 @@ arithmetic_expr:
   | arithmetic_expr PERCENT arithmetic_expr   { binary "%" $1 $3 }
 
 simple_expr:
-  | IDENT                                             { SVar $1 }
-  | INT                                               { SInt $1 }
-  | TRUE                                              { SBool true }
-  | FALSE                                             { SBool false }
-  | LPAREN expr RPAREN                                { $2 }
-  /*| RECT LPAREN expr COMMA expr COMMA expr COMMA expr RPAREN   { SRect($3, $5, $7, $9) }*/
-  | simple_expr LPAREN expr_comma_list RPAREN         { SCall($1, $3) }
-  | simple_expr LPAREN RPAREN                         { SCall($1, []) }
-  | LBRACE expr_comma_list RBRACE                     { SShape($2) }
+  | IDENT                                                                               { SVar $1 }
+  | INT                                                                                 { SInt $1 }
+  | TRUE                                                                                { SBool true }
+  | FALSE                                                                               { SBool false }
+  | LPAREN expr RPAREN                                                                  { $2 }
+  | RECT LPAREN expr COMMA expr COMMA expr COMMA expr RPAREN                            { SRect($3, $5, $7, $9) }
+  | LINE LPAREN expr COMMA expr COMMA expr COMMA expr RPAREN                            { SLine($3, $5, $7, $9) }
+  | TRIANGLE LPAREN expr COMMA expr COMMA expr COMMA expr COMMA expr COMMA expr RPAREN  { STriangle($3, $5, $7, $9, $11, $13) }
+  | CIRCLE LPAREN expr COMMA expr COMMA expr RPAREN                                     { SCircle($3, $5, $7) }
+  | simple_expr LPAREN expr_comma_list RPAREN                                           { SCall($1, $3) }
+  | simple_expr LPAREN RPAREN                                                           { SCall($1, []) }
+  | LBRACE expr_comma_list RBRACE                                                       { SShape($2) }
 
 expr_comma_list:
   | expr                          { [$1] }
