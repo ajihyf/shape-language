@@ -70,6 +70,7 @@ expr:
   | simple_expr COLON ty                        { SCast($1, $3, None) }
   | simple_expr COLON ty BAR expr               { SCast($1, $3, Some $5) }
   | LET IDENT EQUALS expr IN expr               { SLet($2, $4, $6) }
+  | FIX expr                                    { SFix($2) }
   | fun_expr                                    { $1 }
   | IF expr THEN expr ELSE expr                 { SIf($2, $4, $6) }
 

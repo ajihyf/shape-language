@@ -19,7 +19,9 @@ let test_cases = [
 (";", Fail);
 ("{s1,s2}", OK [LBRACE; IDENT "s1"; COMMA; IDENT "s2"; RBRACE]);
 ("rect(1,2,s1,s4)", OK [RECT; LPAREN; INT 1; COMMA; INT 2; COMMA; IDENT "s1"; COMMA; IDENT "s4"; RPAREN]);
-("circle(1,2,s1)", OK [CIRCLE; LPAREN; INT 1; COMMA; INT 2; COMMA; IDENT "s1"; RPAREN])
+("circle(1,2,s1)", OK [CIRCLE; LPAREN; INT 1; COMMA; INT 2; COMMA; IDENT "s1"; RPAREN]);
+("fix 1", OK [FIX; INT 1]);
+("fix fun", OK [FIX; FUN]);
 ]
 
 

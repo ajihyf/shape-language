@@ -126,6 +126,8 @@ and string_of_s_expr expr : string =
     | SCast(expr, ty, None) -> simple_expr expr ^ " : " ^ string_of_s_ty_ann ty
     | SCast(expr, ty, Some contract_expr) ->
       simple_expr expr ^ " : " ^ string_of_s_ty_ann ty ^ " | " ^ complex_expr contract_expr
+    | SFix(expr) ->
+      "fix " ^ complex_expr expr
     | expr -> simple_expr expr
 
   and simple_expr = function
