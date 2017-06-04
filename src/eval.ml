@@ -1,4 +1,5 @@
 open Expr
+open Printing
 
 exception Error of string
 
@@ -7,9 +8,10 @@ module Ctx = struct
   type ctx = t_ty StringMap.t
   let empty : ctx = StringMap.empty
   let extend name v ctx =
-    if StringMap.mem name ctx then raise (Error "the name is allocated already") else
+    (*if StringMap.mem name ctx then raise (Error "the name is allocated already") else*)
       StringMap.add name v ctx
-  let lookup name ctx = StringMap.find name ctx
+  let lookup name ctx = if StringMap.mem name ctx then StringMap.find name ctx else
+      raise (Error (name ^ " no such name "))
   let map f ctx = StringMap.map f ctx
   let fold f ctx init = StringMap.fold f ctx init
 end
@@ -75,15 +77,29 @@ let rec beta_reduction ctx para_list val_list exp =
         SLet(name, y, (beta_reduction new_ctx rest1 rest2 exp))
     | _ -> raise (Error "beta_reduction error")
 
+let print_map map =
+    let print_record key (value: s_expr) =
+      print_string (key ^ " " ^ (string_of_s_expr value) ^ "\n")
+    in
+    Ctx.StringMap.iter print_record map
+
 let rec eval1 ctx t =
+    (*print_endline "ctx: ";*)
+    (*print_map ctx;*)
+    (*print_newline();*)
+    (*print_endline "term: ";*)
+    (*print_string (string_of_s_expr t);*)
+    (*print_newline();*)
+    (*print_newline();*)
     match t with
       SVar(name) ->
+        (*print_endline (name ^ "  var");*)
         Ctx.lookup name ctx
     | SIf(SBool(v), t2, t3) ->
-        if v then t2 else t3
+        if v then eval1 ctx t2 else eval1 ctx t3
     | SIf(t1, t2, t3) ->
         let t1' = eval1 ctx t1 in
-            SIf(t1', t2, t3)
+            eval1 ctx (SIf(t1', t2, t3))
     | SLet(t1, t2, t3) when isval t2 ->
         let new_ctx = Ctx.extend t1 t2 ctx in
             eval1 new_ctx t3
@@ -95,12 +111,9 @@ let rec eval1 ctx t =
             (match t2' with
                [] -> []
              | x::rest ->
-                (match x with
-                  SBool(_) -> x::(eval_params rest)
-                | SInt(_) -> x::(eval_params rest)
-                | SFun(_,_,_) -> x::(eval_params rest)
-                | _ -> (eval1 ctx x)::(eval_params rest))) in
-         SCall(SVar(name), eval_params(t2))
+                if isval x then ((*print_endline "a";*) x::(eval_params rest))
+                           else ((*print_endline "b";*) (eval1 ctx x)::(eval_params rest))) in
+         eval1 ctx (SCall(SVar(name), eval_params(t2)))
     | SCall(SVar(name), t2) when is_built_in_call name ->
         (match t2 with
            x1::x2::[] ->
@@ -117,7 +130,7 @@ let rec eval1 ctx t =
          | _ -> raise (Error "parameter num of +/- is not 2"))
     | SCall(SVar(name), t2) ->
         (match Ctx.lookup name ctx with
-          SFun(param_list, _, exp) -> beta_reduction ctx param_list t2 exp
+          SFun(param_list, _, exp) -> eval1 ctx (beta_reduction ctx param_list t2 exp)
         | _ -> raise (Error "call an undefined function"))
     | SCast(t1, t2, t3) when isval t1 -> t1
     | SCast(t1, t2, t3) ->
@@ -169,5 +182,5 @@ let rec eval1 ctx t =
 let rec eval ctx t =
     try
         let t' = eval1 ctx t
-        in eval ctx t'
+        in (*print_endline "eval again" ;*)eval ctx t'
     with (Error "no rule to apply") -> t
