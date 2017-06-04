@@ -51,7 +51,8 @@ rule token = parse
   | '-'     { MINUS }
   | '*'     { STAR }
   | '/'     { SLASH }
-  |  '%'     { PERCENT }
+  | '%'     { PERCENT }
+  | '$'     { DOLLAR }
 
   | '>'     { GT }
   | '<'     { LT }
@@ -98,6 +99,7 @@ let string_of_token = function
   | STAR -> "*"
   | SLASH -> "/"
   | PERCENT -> "%"
+  | DOLLAR -> "$"
   | GT -> ">"
   | LT -> "<"
   | GE -> ">="

@@ -167,16 +167,15 @@ let assert_shape_bound target l t w h =
   assert_eq ("(height " ^ target ^ ")") h
 
 let rec check_contract if_clause fn_env local_env contract_expr =
-  check_contract_internal if_clause (fun () ->
-      assert_false (check_value Formula if_clause fn_env local_env contract_expr))
+  check_contract_internal if_clause (check_value Formula if_clause fn_env local_env contract_expr)
 
-and check_contract_internal if_clause fn =
+and check_contract_internal if_clause translated_check_expr = 
   Smt.push_pop (fun () ->
       begin match if_clause with
         | Some translated_cond_expr -> assert_true translated_cond_expr
         | None -> ()
       end ;
-      fn ();
+      assert_false translated_check_expr;
       match Smt.check_sat () with
       | Unsat -> (* OK *) ()
       | Sat -> error ("SMT solver returned sat.")
@@ -242,7 +241,7 @@ and check_ge_zero if_clause fn_env local_env expr =
 and check_builtin if_clause fn_env local_env checkfn expr =
   let checkee_expr = check_value Term if_clause fn_env local_env expr in
   let translated_expr = checkfn checkee_expr in
-  check_contract_internal if_clause (fun () -> assert_false translated_expr);
+  check_contract_internal if_clause translated_expr;
   checkee_expr
 
 and check_function_call if_clause fn_env local_env fn_expr arg_expr_list =
@@ -315,6 +314,27 @@ and check_value expected_result if_clause fn_env local_env expr =
     let local_env_and_ty = check_function if_clause fn_env local_env fn_expr in
     let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
     check_value expected_result if_clause new_fn_env local_env body_expr
+  | ELetRec(fn_name, fn_expr, body_expr) ->
+    (* get function ty first *)
+    let local_env_and_ty = (match fn_expr.shape with
+      | EFun(param_list, maybe_return_r_ty, body_expr) ->
+        Smt.push_pop (fun () ->
+            let param_r_ty_list = List.map
+                (function
+                  | (name, ty, None) -> Named(name, ty)
+                  | (name, ty, Some contract_expr) -> Refined(name, ty, contract_expr))
+                param_list
+            in
+            let return_r_ty = match maybe_return_r_ty with
+              | Some (Refined(name, ty, expr)) -> Refined(name, ty, expr)
+              | _ -> Plain body_expr.ty
+            in
+            (LocalEnv.empty, TArrow(param_r_ty_list, return_r_ty)))
+        | _ -> assert false) in
+    let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
+    (* then re-check *)
+    ignore (check_function if_clause new_fn_env local_env fn_expr);
+    check_value expected_result if_clause new_fn_env local_env body_expr
   | EIf(cond_expr, then_expr, else_expr) -> begin
       let translated_cond_expr = check_value Term if_clause fn_env local_env cond_expr in
       let then_if_clause, else_if_clause = match if_clause with
@@ -343,7 +363,7 @@ and check_value expected_result if_clause fn_env local_env expr =
     check_contract if_clause fn_env local_env contract_expr ;
     translated_expr
   | ECast(expr, ty, None) -> check_value expected_result if_clause fn_env local_env expr
-  | EShape(shape_list) ->
+  | EShape(shape_list, check_overlap) ->
     let var_name = declare_new_var expr.ty in
     let child_shapes = List.map
         (fun shape_expr ->
@@ -351,20 +371,17 @@ and check_value expected_result if_clause fn_env local_env expr =
         )
         shape_list
     in
-    (* Check for collision *)
-    List.iteri (fun i -> fun a ->
-        List.iteri (fun j -> fun b ->
-            if j > i then check_contract_internal if_clause (fun () ->
-                assert_false ("(or (or " ^
-                              "(<= (+ (left " ^ a ^ ") (width " ^ a ^ ")) (left " ^ b ^ "))" ^
-                              "(<= (+ (top " ^ a ^ ") (height " ^ a ^ ")) (top " ^ b ^ "))" ^ ") (or " ^
-                              "(<= (+ (left " ^ b ^ ") (width " ^ b ^ ")) (left " ^ a ^ "))" ^
-                              "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))")) else ()
-          ) child_shapes) child_shapes;
-    (* Check for collision - end *)
+    if check_overlap then
+    List.iteri (fun i -> fun a -> 
+      List.iteri (fun j -> fun b ->
+        if j > i then check_contract_internal if_clause ("(or (or " ^
+            "(<= (+ (left " ^ a ^ ") (width " ^ a ^ ")) (left " ^ b ^ "))" ^
+            "(<= (+ (top " ^ a ^ ") (height " ^ a ^ ")) (top " ^ b ^ "))" ^ ") (or " ^
+            "(<= (+ (left " ^ b ^ ") (width " ^ b ^ ")) (left " ^ a ^ "))" ^
+            "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))") else ()
+      ) child_shapes) child_shapes else ();
     assert_shape_has var_name child_shapes;
     var_name
-  | ELetRec(_, _, _) -> error "not implemented"
   | ERect(l, t, w, h) ->
     let var_name = declare_new_var expr.ty in
     let (l, t) = map_tuple2 (check_ge_zero if_clause fn_env local_env) (l, t) in
@@ -451,6 +468,27 @@ and check_function if_clause fn_env local_env expr =
     let local_env_and_ty = check_function if_clause fn_env local_env fn_expr in
     let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
     check_function if_clause new_fn_env local_env body_expr
+  | ELetRec(fn_name, fn_expr, body_expr) ->
+    (* get function ty first *)
+    let local_env_and_ty = (match fn_expr.shape with
+      | EFun(param_list, maybe_return_r_ty, body_expr) ->
+        Smt.push_pop (fun () ->
+            let param_r_ty_list = List.map
+                (function
+                  | (name, ty, None) -> Named(name, ty)
+                  | (name, ty, Some contract_expr) -> Refined(name, ty, contract_expr))
+                param_list
+            in
+            let return_r_ty = match maybe_return_r_ty with
+              | Some (Refined(name, ty, expr)) -> Refined(name, ty, expr)
+              | _ -> Plain body_expr.ty
+            in
+            (LocalEnv.empty, TArrow(param_r_ty_list, return_r_ty)))
+        | _ -> assert false) in
+    let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
+    (* then re-check *)
+    ignore (check_function if_clause new_fn_env local_env fn_expr);
+    check_function if_clause new_fn_env local_env body_expr
   | EIf _ -> error "cannot use an if statement to select a function"
   | ECast(expr, ty, Some contract_expr) ->
     check_function_subtype if_clause fn_env local_env expr ty ;
@@ -459,7 +497,6 @@ and check_function if_clause fn_env local_env expr =
   | ECast(expr, ty, None) ->
     check_function_subtype if_clause fn_env local_env expr ty ;
     (LocalEnv.empty, ty)
-  | ELetRec(_, _, _) -> error "not implemented"
   | _ -> assert false
 
 

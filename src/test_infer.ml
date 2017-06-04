@@ -55,6 +55,8 @@ let test_infer = [
   ("let apply_curry = fun f -> fun x -> f(x) in apply_curry", OK "forall[a b] (a -> b) -> a -> b");
 
   (* type-checking contracts *)
+  ("let g = fun(f: int -> int) -> f in let m = fun(a: int) -> a + 1 in g(m)(1)", OK "int");
+
   ("let g = fun(f : int -> int | f(true) == 1) -> 1 in g", error "cannot unify types int and bool");
   ("choose(length, length)", OK "forall[a] array[a] -> int");
   ("1 : int | 1 > 0", OK "int");
@@ -66,7 +68,9 @@ let test_infer = [
   ("let x = 0 in fac : (x : int | x >= 0) -> int", fail);
   ("{rect(1,2,3,4),1}", fail);
   ("{rect(1,2,3,4),line(1,2,3,4)}", OK "shape");
-
+  ("{rect(1,2,true,4),line(1,2,3,4)}", fail);
+  ("let a = true in {rect(1,2,a,4),line(1,2,3,4)}", fail);
+  ("let a = 1 in {rect(1,2,a,4),line(1,2,3,4)}", OK "shape");
 ]
 
 let test_infer_and_syntax = [

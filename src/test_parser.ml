@@ -75,7 +75,9 @@ let test_cases = [
                                                                 SCall(SVar ">", [SVar "x"; SInt 0]))), Some (SCall(SVar ">", [SCall(SVar "f",
                                                                                                                                     [SInt 0]); SInt 1]))))], None, SInt 1)));
   ("{s1, s2}",
-   OK (SShape([SVar "s1"; SVar "s2"])));
+   OK (SShape([SVar "s1"; SVar "s2"], false)));
+   ("{$s1, s2}",
+   OK (SShape([SVar "s1"; SVar "s2"], true)));
 
   ("rect(1,2,s1,s4)", OK (SRect(SInt 1, SInt 2, SVar "s1", SVar "s4")));
   ("circle(1,2,s1)", OK (SCircle(SInt 1, SInt 2, SVar "s1")));

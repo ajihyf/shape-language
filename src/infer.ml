@@ -177,6 +177,14 @@ let rec infer_expr env level = function
       | Some contract_s_expr -> Some (infer_contract env level contract_s_expr)
     in
     {shape = ECast(t_expr, instantiated_t_ty, maybe_contract_t_expr); ty = plain_t_ty}
+  | SShape(shape_list, check_overlap) ->
+    let shape_t_list = List.map (fun shape_expr ->
+        let shape_t_expr = infer_expr env level shape_expr in
+        unify t_shape shape_t_expr.ty;
+        shape_t_expr)
+        shape_list
+    in
+    {shape = EShape(shape_t_list, check_overlap); ty = t_shape}
   | SLetRec(var_name, value_s_expr, body_s_expr) -> (
       match value_s_expr with
         SFun(param_list, maybe_return_t, fun_body_expr) ->
@@ -195,26 +203,18 @@ let rec infer_expr env level = function
          | _ -> error "let rec should accept a function with return type.tys defined")
       | _ -> error "let rec should accept a function with return types defined"
     )
-  | SShape(shape_list) ->
-    let shape_t_list = List.map (fun shape_expr ->
-        let shape_t_expr = infer_expr env level shape_expr in
-        unify t_shape shape_t_expr.ty;
-        shape_t_expr)
-        shape_list
-    in
-    {shape = EShape(shape_t_list); ty = t_shape}
-  | SRect(l, t, w, h) ->
-    let (l, t, w, h) = map_tuple4 (infer_expr env level) (l, t, w, h) in
-    {shape = ERect(l, t, w, h); ty = t_shape}
-  | SLine(p1x, p1y, p2x, p2y) ->
-    let (p1x, p1y, p2x, p2y) = map_tuple4 (infer_expr env level) (p1x, p1y, p2x, p2y) in
-    {shape = ELine(p1x, p1y, p2x, p2y); ty = t_shape}
-  | STriangle(p1x, p1y, p2x, p2y, p3x, p3y) ->
-    let (p1x, p1y, p2x, p2y, p3x, p3y) = map_tuple6 (infer_expr env level) (p1x, p1y, p2x, p2y, p3x, p3y) in
-    {shape = ETriangle(p1x, p1y, p2x, p2y, p3x, p3y); ty = t_shape}
-  | SCircle(cx, cy, r) ->
-    let (cx, cy, r) = map_tuple3 (infer_expr env level) (cx, cy, r) in
-    {shape = ECircle(cx, cy, r); ty = t_shape}
+  | SRect(l, t, w, h) -> 
+    let (l, t, w, h) = map_tuple4 (fun arg -> let expr = infer_expr env level arg in unify (TConst "int") expr.ty; expr) (l, t, w, h) in
+    {shape = ERect(l, t, w, h); ty = TConst "shape"}
+  | SLine(p1x, p1y, p2x, p2y) -> 
+    let (p1x, p1y, p2x, p2y) = map_tuple4 (fun arg -> let expr = infer_expr env level arg in unify (TConst "int") expr.ty; expr) (p1x, p1y, p2x, p2y) in
+    {shape = ELine(p1x, p1y, p2x, p2y); ty = TConst "shape"}
+  | STriangle(p1x, p1y, p2x, p2y, p3x, p3y) -> 
+    let (p1x, p1y, p2x, p2y, p3x, p3y) = map_tuple6 (fun arg -> let expr = infer_expr env level arg in unify (TConst "int") expr.ty; expr) (p1x, p1y, p2x, p2y, p3x, p3y) in
+    {shape = ETriangle(p1x, p1y, p2x, p2y, p3x, p3y); ty = TConst "shape"}
+  | SCircle(cx, cy, r) -> 
+    let (cx, cy, r) = map_tuple3 (fun arg -> let expr = infer_expr env level arg in unify (TConst "int") expr.ty; expr) (cx, cy, r) in
+    {shape = ECircle(cx, cy, r); ty = TConst "shape"}
 
 and instantiate_and_infer_ty env level ty = infer_ty env level (instantiate level ty)
 

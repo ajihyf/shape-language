@@ -87,7 +87,7 @@ and s_expr =
   | SLine of s_expr * s_expr * s_expr * s_expr
   | STriangle of s_expr * s_expr * s_expr * s_expr * s_expr * s_expr
   | SCircle of s_expr * s_expr * s_expr
-  | SShape of s_expr list
+  | SShape of s_expr list * bool
 
 and s_param = name * (s_ty * s_expr option) option
 
@@ -112,7 +112,7 @@ and t_expr_shape =
   | ELine of t_expr * t_expr * t_expr * t_expr
   | ETriangle of t_expr * t_expr * t_expr * t_expr * t_expr * t_expr
   | ECircle of t_expr * t_expr * t_expr
-  | EShape of t_expr list
+  | EShape of t_expr list * bool
 
 and t_param = name * t_ty * t_expr option
 
