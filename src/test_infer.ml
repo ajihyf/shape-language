@@ -69,6 +69,8 @@ let test_infer = [
   ("{rect(1,2,3,4),1}", fail);
   ("{rect(1,2,3,4),line(1,2,3,4)}", OK "shape");
   ("{rect(1,2,true,4),line(1,2,3,4)}", fail);
+  ("let a = true in {rect(1,2,a,4),line(1,2,3,4)}", fail);
+  ("let a = 1 in {rect(1,2,a,4),line(1,2,3,4)}", OK "shape");
 ]
 
 let test_infer_and_syntax = [
