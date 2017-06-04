@@ -246,6 +246,26 @@ let test_cases = [
 
   ("let a = fun (b: int | b >= 0): (c: int | c >= 10) -> b + 10 in let d = fun (b: int): (c: int | c > 0) -> 1 in a(d(0))", OK);
   ("let a = fun (b: int | b >= 0): (c: int | c >= 10) -> b + 10 in let d = fun (b: int): (c: int | c < 0) -> -1 in a(d(0))", wrong);
+
+  ("let f = fun (x: shape): (r: shape | top(r) == top(x)) -> x in let s = f(rect(0,0,2,2)) in s: shape | top(s) == 0", OK);
+
+  ("let rec f = fun(a: int | a > 0): (b: int | b >= a) -> (if a > 5 then a else a + f(a)) in f(3)", OK);
+  ("let rec f = fun(a: int | a > 0): (b: int | b >= a) -> (if a > 5 then a else a + f(a)) in f(-1)", wrong);
+
+  ("let rec f = fun(s: shape, a: int | a > 0 and a == top(s)): (r: int) -> 1 in f(rect(1,1,1,1),1)", OK);
+  ("let rec f = fun(s: shape, a: int | a > 0 and a == top(s)): (r: int) -> 1 in f(rect(1,2,1,1),1)", wrong);
+  
+  ("let rec f = fun(s: shape, a: int | a == top(s)): (r: shape | top(r) <= a) -> " ^
+   " (let ret = {s, rect(a - 1, a - 1, 1, 1)} in" ^
+   " if a > 3 then f(ret, a - 1) else ret) in let final = f(rect(5, 5, 2, 2), 5) in final", wrong);
+
+  ("let rec f = fun(s: shape, a: int | a > 2 and a == top(s)): (r: shape | top(r) <= a) -> " ^
+   " (let ret = {s, rect(a - 1, a - 1, 1, 1)} in" ^
+   " if a > 3 then f(ret, a - 1) else ret) in let final = f(rect(5, 5, 2, 2), 5) in final", OK);
+
+  ("let rec f = fun(s: shape, a: int | a > 2 and a == top(s)): (r: shape | top(r) > 0) -> " ^
+   " (let ret = {s, rect(a - 1, a - 1, 1, 1)} in" ^
+   " if a > 3 then f(ret, a - 1) else ret) in let final = f(rect(5, 5, 2, 2), 5) in final", OK);
 ]
 
 

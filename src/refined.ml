@@ -314,6 +314,27 @@ and check_value expected_result if_clause fn_env local_env expr =
     let local_env_and_ty = check_function if_clause fn_env local_env fn_expr in
     let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
     check_value expected_result if_clause new_fn_env local_env body_expr
+  | ELetRec(fn_name, fn_expr, body_expr) ->
+    (* get function ty first *)
+    let local_env_and_ty = (match fn_expr.shape with
+      | EFun(param_list, maybe_return_r_ty, body_expr) ->
+        Smt.push_pop (fun () ->
+            let param_r_ty_list = List.map
+                (function
+                  | (name, ty, None) -> Named(name, ty)
+                  | (name, ty, Some contract_expr) -> Refined(name, ty, contract_expr))
+                param_list
+            in
+            let return_r_ty = match maybe_return_r_ty with
+              | Some (Refined(name, ty, expr)) -> Refined(name, ty, expr)
+              | _ -> Plain body_expr.ty
+            in
+            (LocalEnv.empty, TArrow(param_r_ty_list, return_r_ty)))
+        | _ -> assert false) in
+    let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
+    (* then re-check *)
+    ignore (check_function if_clause new_fn_env local_env fn_expr);
+    check_value expected_result if_clause new_fn_env local_env body_expr
   | EIf(cond_expr, then_expr, else_expr) -> begin
       let translated_cond_expr = check_value Term if_clause fn_env local_env cond_expr in
       let then_if_clause, else_if_clause = match if_clause with
@@ -361,7 +382,6 @@ and check_value expected_result if_clause fn_env local_env expr =
       ) child_shapes) child_shapes else ();
     assert_shape_has var_name child_shapes;
     var_name
-  | ELetRec(_, _, _) -> error "not implemented"
   | ERect(l, t, w, h) ->
     let var_name = declare_new_var expr.ty in
     let (l, t) = map_tuple2 (check_ge_zero if_clause fn_env local_env) (l, t) in
@@ -448,6 +468,27 @@ and check_function if_clause fn_env local_env expr =
     let local_env_and_ty = check_function if_clause fn_env local_env fn_expr in
     let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
     check_function if_clause new_fn_env local_env body_expr
+  | ELetRec(fn_name, fn_expr, body_expr) ->
+    (* get function ty first *)
+    let local_env_and_ty = (match fn_expr.shape with
+      | EFun(param_list, maybe_return_r_ty, body_expr) ->
+        Smt.push_pop (fun () ->
+            let param_r_ty_list = List.map
+                (function
+                  | (name, ty, None) -> Named(name, ty)
+                  | (name, ty, Some contract_expr) -> Refined(name, ty, contract_expr))
+                param_list
+            in
+            let return_r_ty = match maybe_return_r_ty with
+              | Some (Refined(name, ty, expr)) -> Refined(name, ty, expr)
+              | _ -> Plain body_expr.ty
+            in
+            (LocalEnv.empty, TArrow(param_r_ty_list, return_r_ty)))
+        | _ -> assert false) in
+    let new_fn_env = FnEnv.extend fn_name local_env_and_ty fn_env in
+    (* then re-check *)
+    ignore (check_function if_clause new_fn_env local_env fn_expr);
+    check_function if_clause new_fn_env local_env body_expr
   | EIf _ -> error "cannot use an if statement to select a function"
   | ECast(expr, ty, Some contract_expr) ->
     check_function_subtype if_clause fn_env local_env expr ty ;
@@ -456,7 +497,6 @@ and check_function if_clause fn_env local_env expr =
   | ECast(expr, ty, None) ->
     check_function_subtype if_clause fn_env local_env expr ty ;
     (LocalEnv.empty, ty)
-  | ELetRec(_, _, _) -> error "not implemented"
   | _ -> assert false
 
 
