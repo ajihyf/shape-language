@@ -182,14 +182,14 @@ let rec infer_expr env level = function
     in
     {shape = ECast(t_expr, instantiated_t_ty, maybe_contract_t_expr); ty = plain_t_ty}
   | SFix(_) -> error "not implemented"
-  | SShape(shape_list) ->
+  | SShape(shape_list, check_overlap) ->
     let shape_t_list = List.map (fun shape_expr ->
         let shape_t_expr = infer_expr env level shape_expr in
         unify t_shape shape_t_expr.ty;
         shape_t_expr)
         shape_list
     in
-    {shape = EShape(shape_t_list); ty = t_shape}
+    {shape = EShape(shape_t_list, check_overlap); ty = t_shape}
   | SRect(l, t, w, h) -> 
     let [l; t; w; h] = List.map (infer_expr env level) [l; t; w; h] in
     {shape = ERect(l, t, w, h); ty = TConst "shape"}

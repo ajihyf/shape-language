@@ -342,7 +342,7 @@ and check_value expected_result if_clause fn_env local_env expr =
     check_contract if_clause fn_env local_env contract_expr ;
     translated_expr
   | ECast(expr, ty, None) -> check_value expected_result if_clause fn_env local_env expr
-  | EShape(shape_list) ->
+  | EShape(shape_list, check_overlap) ->
     let var_name = declare_new_var expr.ty in
     let child_shapes = List.map
         (fun shape_expr ->
@@ -350,7 +350,7 @@ and check_value expected_result if_clause fn_env local_env expr =
         )
         shape_list
     in
-    (* Check for collision *)
+    if check_overlap then
     List.iteri (fun i -> fun a -> 
       List.iteri (fun j -> fun b ->
         if j > i then check_contract_internal if_clause (fun () -> 
@@ -359,8 +359,7 @@ and check_value expected_result if_clause fn_env local_env expr =
             "(<= (+ (top " ^ a ^ ") (height " ^ a ^ ")) (top " ^ b ^ "))" ^ ") (or " ^
             "(<= (+ (left " ^ b ^ ") (width " ^ b ^ ")) (left " ^ a ^ "))" ^
             "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))")) else ()
-      ) child_shapes) child_shapes;
-    (* Check for collision - end *)
+      ) child_shapes) child_shapes else ();
     assert_shape_has var_name child_shapes;
     var_name
   | EFix(_, _) -> error "not implemented"

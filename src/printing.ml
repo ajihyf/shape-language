@@ -153,8 +153,11 @@ and string_of_s_expr expr : string =
       "triangle(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ", " ^ complex_expr p3x ^ ", " ^ complex_expr p3y ^ ")"
     | SCircle(cx, cy, r) ->
       "circle(" ^ complex_expr cx ^ ", " ^ complex_expr cy ^ ", " ^ complex_expr r ^ ")"
-    | SShape(shape_expr_list) ->
-      "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+    | SShape(shape_expr_list, check_overlap) ->
+      if check_overlap then
+        "{$" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+      else
+        "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | expr -> "(" ^ complex_expr expr ^ ")"
   in
   complex_expr expr
@@ -228,8 +231,11 @@ and string_of_t_expr expr : string =
       "triangle(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ", " ^ complex_expr p3x ^ ", " ^ complex_expr p3y ^ ")"
     | ECircle(cx, cy, r) ->
       "circle(" ^ complex_expr cx ^ ", " ^ complex_expr cy ^ ", " ^ complex_expr r ^ ")"
-    | EShape(shape_expr_list) ->
-      "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+    | EShape(shape_expr_list, check_overlap) ->
+      if check_overlap then
+        "{$" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+      else
+        "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | _ -> "(" ^ complex_expr expr ^ ")"
   in
   complex_expr expr
