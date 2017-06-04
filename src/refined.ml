@@ -364,7 +364,7 @@ and check_value expected_result if_clause fn_env local_env expr =
     (* Check for collision - end *)
     assert_shape_has var_name child_shapes;
     var_name
-  | EFix(_, _) -> error "not implemented"
+  | ELetRec(_, _, _) -> error "not implemented"
   | ERect(l, t, w, h) ->
     let var_name = declare_new_var expr.ty in
     let (l, t) = map_tuple2 (check_ge_zero if_clause fn_env local_env) (l, t) in
@@ -459,7 +459,7 @@ and check_function if_clause fn_env local_env expr =
   | ECast(expr, ty, None) ->
     check_function_subtype if_clause fn_env local_env expr ty ;
     (LocalEnv.empty, ty)
-  | EFix(_, _) -> error "not implemented"
+  | ELetRec(_, _, _) -> error "not implemented"
   | _ -> assert false
 
 

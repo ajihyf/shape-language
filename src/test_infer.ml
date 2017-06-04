@@ -66,6 +66,7 @@ let test_infer = [
   ("let x = 0 in fac : (x : int | x >= 0) -> int", fail);
   ("{rect(1,2,3,4),1}", fail);
   ("{rect(1,2,3,4),line(1,2,3,4)}", OK "shape");
+
 ]
 
 let test_infer_and_syntax = [

@@ -178,7 +178,15 @@ let rec infer_expr env level = function
       | Some contract_s_expr -> Some (infer_contract env level contract_s_expr)
     in
     {shape = ECast(t_expr, instantiated_t_ty, maybe_contract_t_expr); ty = plain_t_ty}
-  | SFix(_) -> error "not implemented"
+  | SLetRec(var_name, value_s_expr, body_s_expr) ->
+    let value_t_expr = infer_expr env (level + 1) value_s_expr in
+    let generalized_ty = generalize level value_t_expr.ty in
+    let new_env = Env.extend var_name generalized_ty env in
+    let body_t_expr = infer_expr new_env level body_s_expr in
+    {
+      shape = ELet(var_name, {shape = value_t_expr.shape; ty = generalized_ty}, body_t_expr);
+      ty = body_t_expr.ty
+    }
   | SShape(shape_list) ->
     let shape_t_list = List.map (fun shape_expr ->
         let shape_t_expr = infer_expr env level shape_expr in

@@ -81,7 +81,7 @@ and s_expr =
   | SLet of name * s_expr * s_expr
   | SIf of s_expr * s_expr * s_expr
   | SCast of s_expr * s_ty * s_expr option
-  | SFix of s_expr
+  | SLetRec of name * s_expr * s_expr
   (*left top width height*)
   | SRect of s_expr * s_expr * s_expr * s_expr
   | SLine of s_expr * s_expr * s_expr * s_expr
@@ -107,7 +107,7 @@ and t_expr_shape =
   | ELet of name * t_expr * t_expr
   | EIf of t_expr * t_expr * t_expr
   | ECast of t_expr * t_ty * t_expr option
-  | EFix of name * t_expr
+  | ELetRec of name * t_expr * t_expr
   | ERect of t_expr * t_expr * t_expr * t_expr
   | ELine of t_expr * t_expr * t_expr * t_expr
   | ETriangle of t_expr * t_expr * t_expr * t_expr * t_expr * t_expr

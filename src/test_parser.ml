@@ -79,9 +79,6 @@ let test_cases = [
 
   ("rect(1,2,s1,s4)", OK (SRect(SInt 1, SInt 2, SVar "s1", SVar "s4")));
   ("circle(1,2,s1)", OK (SCircle(SInt 1, SInt 2, SVar "s1")));
-
-  ("fix 1", OK (SFix (SInt 1)));
-  ("fix (fun (a) -> a)", OK (SFix(SFun([("a", None)], None, SVar "a"))));
 ]
 
 
