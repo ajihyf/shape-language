@@ -1,6 +1,7 @@
 open Expr
 open Printing
 open Smt
+open Utils
 
 module StringSet = Set.Make(String)
 module StringMap = Map.Make(String)
@@ -169,7 +170,7 @@ let rec check_contract if_clause fn_env local_env contract_expr =
   check_contract_internal if_clause (fun () ->
       assert_false (check_value Formula if_clause fn_env local_env contract_expr))
 
-and check_contract_internal if_clause fn = 
+and check_contract_internal if_clause fn =
   Smt.push_pop (fun () ->
       begin match if_clause with
         | Some translated_cond_expr -> assert_true translated_cond_expr
@@ -351,33 +352,33 @@ and check_value expected_result if_clause fn_env local_env expr =
         shape_list
     in
     (* Check for collision *)
-    List.iteri (fun i -> fun a -> 
-      List.iteri (fun j -> fun b ->
-        if j > i then check_contract_internal if_clause (fun () -> 
-          assert_false ("(or (or " ^
-            "(<= (+ (left " ^ a ^ ") (width " ^ a ^ ")) (left " ^ b ^ "))" ^
-            "(<= (+ (top " ^ a ^ ") (height " ^ a ^ ")) (top " ^ b ^ "))" ^ ") (or " ^
-            "(<= (+ (left " ^ b ^ ") (width " ^ b ^ ")) (left " ^ a ^ "))" ^
-            "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))")) else ()
-      ) child_shapes) child_shapes;
+    List.iteri (fun i -> fun a ->
+        List.iteri (fun j -> fun b ->
+            if j > i then check_contract_internal if_clause (fun () ->
+                assert_false ("(or (or " ^
+                              "(<= (+ (left " ^ a ^ ") (width " ^ a ^ ")) (left " ^ b ^ "))" ^
+                              "(<= (+ (top " ^ a ^ ") (height " ^ a ^ ")) (top " ^ b ^ "))" ^ ") (or " ^
+                              "(<= (+ (left " ^ b ^ ") (width " ^ b ^ ")) (left " ^ a ^ "))" ^
+                              "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))")) else ()
+          ) child_shapes) child_shapes;
     (* Check for collision - end *)
     assert_shape_has var_name child_shapes;
     var_name
   | EFix(_, _) -> error "not implemented"
   | ERect(l, t, w, h) ->
     let var_name = declare_new_var expr.ty in
-    let [l; t] = List.map (check_ge_zero if_clause fn_env local_env) [l; t] in
-    let [w; h] = List.map (check_builtin if_clause fn_env local_env (fun x -> "(>= " ^ x ^ " 1)")) [w; h] in
+    let (l, t) = map_tuple2 (check_ge_zero if_clause fn_env local_env) (l, t) in
+    let (w, h) = map_tuple2 (check_builtin if_clause fn_env local_env (fun x -> "(>= " ^ x ^ " 1)")) (w, h) in
     assert_shape_bound var_name l t w h;
     var_name
   | ELine(p1x, p1y, p2x, p2y) ->
     let var_name = declare_new_var expr.ty in
-    let [p1x; p1y; p2x; p2y] = List.map (check_ge_zero if_clause fn_env local_env) [p1x; p1y; p2x; p2y] in
+    let (p1x, p1y, p2x, p2y) = map_tuple4 (check_ge_zero if_clause fn_env local_env) (p1x, p1y, p2x, p2y) in
     assert_shape_bound var_name (z3_min p1x p2x) (z3_min p1y p2y) (z3_delta p1x p2x) (z3_delta p1y p2y);
     var_name
   | ETriangle(p1x, p1y, p2x, p2y, p3x, p3y) ->
     let var_name = declare_new_var expr.ty in
-    let [p1x; p1y; p2x; p2y; p3x; p3y] = List.map (check_ge_zero if_clause fn_env local_env) [p1x; p1y; p2x; p2y; p3x; p3y] in
+    let (p1x, p1y, p2x, p2y, p3x, p3y) = map_tuple6 (check_ge_zero if_clause fn_env local_env) (p1x, p1y, p2x, p2y, p3x, p3y) in
     assert_shape_bound var_name
       (z3_min p1x (z3_min p2x p3x))
       (z3_min p1y (z3_min p2y p3y))
@@ -386,7 +387,7 @@ and check_value expected_result if_clause fn_env local_env expr =
     var_name
   | ECircle(cx, cy, r) ->
     let var_name = declare_new_var expr.ty in
-    let [cx; cy] = List.map (check_ge_zero if_clause fn_env local_env) [cx; cy] in
+    let (cx, cy) = map_tuple2 (check_ge_zero if_clause fn_env local_env) (cx, cy) in
     let r = check_builtin if_clause fn_env local_env (fun r ->
         "(and (>= " ^ r ^ " 1) (and (<= " ^ r ^ " " ^ cx ^ ") (<= " ^ r ^ " " ^ cy ^ ")))"
       ) r in
@@ -396,7 +397,7 @@ and check_value expected_result if_clause fn_env local_env expr =
       ("(+ " ^ r ^ " " ^ r ^ ")")
       ("(+ " ^ r ^ " " ^ r ^ ")");
     var_name
-  
+
 
 and check_function if_clause fn_env local_env expr =
   assert (is_function_ty expr.ty) ;

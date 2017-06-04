@@ -238,6 +238,8 @@ let test_cases = [
   ("let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,1+1,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
 
   ("let a = 1+1 in let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,a,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
+  ("let a = {{rect(0,0,1,1)}, rect(3,3,1,1)} in a: shape | (left(a)==0 and width(a)==3)", wrong);
+  ("let a = {{rect(0,0,1,1)}, rect(3,3,1,1)} in a: shape | (left(a)==0 and width(a)==4)", OK);
 ]
 
 

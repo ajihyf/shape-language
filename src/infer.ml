@@ -1,6 +1,6 @@
 open Expr
 open Printing
-
+open Utils
 
 (* Utils *)
 exception Error of string
@@ -33,9 +33,6 @@ module Env = struct
   let map f env = StringMap.map f env
   let fold f env init = StringMap.fold f env init
 end
-
-
-
 
 (* Unification *)
 let occurs_check_adjust_levels tvar_id tvar_level ty =
@@ -191,17 +188,17 @@ let rec infer_expr env level = function
     in
     {shape = EShape(shape_t_list); ty = t_shape}
   | SRect(l, t, w, h) ->
-    let [l; t; w; h] = List.map (infer_expr env level) [l; t; w; h] in
-    {shape = ERect(l, t, w, h); ty = TConst "shape"}
+    let (l, t, w, h) = map_tuple4 (infer_expr env level) (l, t, w, h) in
+    {shape = ERect(l, t, w, h); ty = t_shape}
   | SLine(p1x, p1y, p2x, p2y) ->
-    let [p1x; p1y; p2x; p2y] = List.map (infer_expr env level) [p1x; p1y; p2x; p2y] in
-    {shape = ELine(p1x, p1y, p2x, p2y); ty = TConst "shape"}
+    let (p1x, p1y, p2x, p2y) = map_tuple4 (infer_expr env level) (p1x, p1y, p2x, p2y) in
+    {shape = ELine(p1x, p1y, p2x, p2y); ty = t_shape}
   | STriangle(p1x, p1y, p2x, p2y, p3x, p3y) ->
-    let [p1x; p1y; p2x; p2y; p3x; p3y] = List.map (infer_expr env level) [p1x; p1y; p2x; p2y; p3x; p3y] in
-    {shape = ETriangle(p1x, p1y, p2x, p2y, p3x, p3y); ty = TConst "shape"}
+    let (p1x, p1y, p2x, p2y, p3x, p3y) = map_tuple6 (infer_expr env level) (p1x, p1y, p2x, p2y, p3x, p3y) in
+    {shape = ETriangle(p1x, p1y, p2x, p2y, p3x, p3y); ty = t_shape}
   | SCircle(cx, cy, r) ->
-    let [cx; cy; r] = List.map (infer_expr env level) [cx; cy; r] in
-    {shape = ECircle(cx, cy, r); ty = TConst "shape"}
+    let (cx, cy, r) = map_tuple3 (infer_expr env level) (cx, cy, r) in
+    {shape = ECircle(cx, cy, r); ty = t_shape}
 
 and instantiate_and_infer_ty env level ty = infer_ty env level (instantiate level ty)
 
