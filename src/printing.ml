@@ -126,6 +126,8 @@ and string_of_s_expr expr : string =
     | SCast(expr, ty, None) -> simple_expr expr ^ " : " ^ string_of_s_ty_ann ty
     | SCast(expr, ty, Some contract_expr) ->
       simple_expr expr ^ " : " ^ string_of_s_ty_ann ty ^ " | " ^ complex_expr contract_expr
+    | SLetRec(var_name, value_expr, body_expr) ->
+      "let rec " ^ var_name ^ " = " ^ complex_expr value_expr ^ " in " ^ complex_expr body_expr
     | expr -> simple_expr expr
 
   and simple_expr = function
@@ -153,8 +155,11 @@ and string_of_s_expr expr : string =
       "triangle(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ", " ^ complex_expr p3x ^ ", " ^ complex_expr p3y ^ ")"
     | SCircle(cx, cy, r) ->
       "circle(" ^ complex_expr cx ^ ", " ^ complex_expr cy ^ ", " ^ complex_expr r ^ ")"
-    | SShape(shape_expr_list) ->
-      "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+    | SShape(shape_expr_list, check_overlap) ->
+      if check_overlap then
+        "{$" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+      else
+        "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | expr -> "(" ^ complex_expr expr ^ ")"
   in
   complex_expr expr
@@ -201,6 +206,8 @@ and string_of_t_expr expr : string =
     | ECast(expr, ty, None) -> simple_expr expr ^ " : " ^ string_of_t_ty_ann ty
     | ECast(expr, ty, Some contract_expr) ->
       simple_expr expr ^ " : " ^ string_of_t_ty_ann ty ^ " | " ^ complex_expr contract_expr
+    | ELetRec(var_name, value_expr, body_expr) ->
+      "let rec " ^ var_name ^ " = " ^ complex_expr value_expr ^ " in " ^ complex_expr body_expr
     | _ -> simple_expr expr
 
   and simple_expr expr = match expr.shape with
@@ -228,8 +235,11 @@ and string_of_t_expr expr : string =
       "triangle(" ^ complex_expr p1x ^ ", " ^ complex_expr p1y ^ ", " ^ complex_expr p2x ^ ", " ^ complex_expr p2y ^ ", " ^ complex_expr p3x ^ ", " ^ complex_expr p3y ^ ")"
     | ECircle(cx, cy, r) ->
       "circle(" ^ complex_expr cx ^ ", " ^ complex_expr cy ^ ", " ^ complex_expr r ^ ")"
-    | EShape(shape_expr_list) ->
-      "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+    | EShape(shape_expr_list, check_overlap) ->
+      if check_overlap then
+        "{$" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
+      else
+        "{" ^ String.concat "," (List.map complex_expr shape_expr_list) ^ "}"
     | _ -> "(" ^ complex_expr expr ^ ")"
   in
   complex_expr expr

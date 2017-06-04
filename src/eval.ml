@@ -28,10 +28,10 @@ let rec isval t =
         && (isval t4) && (isval t5) && (isval t6)
     | SCircle(t1, t2, t3) ->
         (isval t1) && (isval t2) && (isval t3)
-    | SShape(t1) ->
+    | SShape(t1, any) ->
         (match t1 with
           [] -> true
-        | x::rest -> isval(x) && isval(SShape(rest)))
+        | x::rest -> isval(x) && isval(SShape(rest, any)))
     | _ -> false
 
 let rec list_isval t =
@@ -108,6 +108,12 @@ let rec eval1 ctx t =
     | SLet(t1, t2, t3) ->
         let t2' = eval1 ctx t2 in
             SLet(t1, t2', t3)
+    | SLetRec(t1, t2, t3) when isval t2 ->
+        let new_ctx = Ctx.extend t1 t2 ctx in
+            eval1 new_ctx t3
+    | SLetRec(t1, t2, t3) ->
+        let t2' = eval1 ctx t2 in
+            SLet(t1, t2', t3)
     | SCall(SVar(name), t2) when (not (list_isval t2)) ->
         let rec eval_params t2' =
             (match t2' with
@@ -172,13 +178,13 @@ let rec eval1 ctx t =
         let t2' = eval1 ctx t2 in SCircle(t1, t2', t3)
     | SCircle(t1, t2, t3) when (not (isval t3)) ->
         let t3' = eval1 ctx t3 in SCircle(t1, t2, t3')
-    | SShape(t1) when (not (list_isval t1)) ->
+    | SShape(t1, any) when (not (list_isval t1)) ->
         let rec eval_shapes t' =
           (match t' with
             [] -> []
           | x::rest when (not (isval x))-> (eval1 ctx x)::(eval_shapes rest)
           | x::rest -> x::(eval_shapes rest)) in
-        let tmp = (SShape(eval_shapes t1)) in
+        let tmp = (SShape((eval_shapes t1), any)) in
           if isval tmp then tmp else (eval1 ctx tmp)
     | _ -> raise (Error "no rule to apply")
 

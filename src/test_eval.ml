@@ -16,15 +16,16 @@ let test_cases = [  ("3 + 2", OK(SInt 5));
     ("let x = 1 in let y = 2 in x + y", OK(SInt 3));
   ("let f = fun (x: Int) -> x + 1 in let g = f(0) in if g > 0 then 1 else 2", OK(SInt 1));
   ("let x = 1 in rect(x, 2, 1, 2)", OK(SRect(SInt 1, SInt 2, SInt 1, SInt 2)));
-  ("let s = {rect(1,1,1,1)} in s", OK(SShape([SRect(SInt 1, SInt 1, SInt 1, SInt 1)])));
+  ("let s = {rect(1,1,1,1)} in s", OK(SShape([SRect(SInt 1, SInt 1, SInt 1, SInt 1)], false)));
   ("let a = 1+1 in let s = {circle(1,1,1),triangle(a,1,1,1,1,1),rect(2,a,1,1)} in s",
     OK(SShape([SCircle(SInt 1, SInt 1, SInt 1); STriangle(SInt 2, SInt 1, SInt 1, SInt 1, SInt 1, SInt 1);
-               SRect(SInt 2, SInt 2, SInt 1, SInt 1)])));
+               SRect(SInt 2, SInt 2, SInt 1, SInt 1)], false)));
   ("let f = fun(x: Int->Int) -> x in let g = fun(x: Int) -> x + 1 in let m = f(g) in m(1)", OK(SInt 2));
   ("let a = 1+1 in let s = {circle(1,1,1),triangle(a,1,1,1,1,1),rect(2,a,a,1)} in s",
     OK(SShape([SCircle(SInt 1, SInt 1, SInt 1); STriangle(SInt 2, SInt 1, SInt 1, SInt 1, SInt 1, SInt 1);
-               SRect(SInt 2, SInt 2, SInt 2, SInt 1)])));
+               SRect(SInt 2, SInt 2, SInt 2, SInt 1)], false)));
   ("let f = fun(x: Int->Int) -> x in let g = fun(x: Int) -> x + 1 in let m = f(g) in m(1)", OK(SInt 2));
+  ("let rec f = fun(x: Int->Int) -> x in let g = fun(x: Int) -> x + 1 in let m = f(g) in m(1)", OK(SInt 2));
 ]
 
 

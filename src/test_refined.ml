@@ -168,6 +168,7 @@ let test_cases = [
 
   (* function subtyping *)
   ("(fun x -> x + 1) : int -> int", OK);
+  ("(fun (x: int) -> x + 1)(1 : int)", OK);
   ("let f = fun x -> x + 1 in f : int -> int", OK);
   ("let f = fun(x : int | x > 0) : (y : int | y == x + 1) -> x + 1 in " ^
    "f : (x : int | x > 0) -> int", OK);
@@ -230,7 +231,9 @@ let test_cases = [
   ("let s = {rect(1,1,1,1),rect(2,2,2,2)} in s: shape | ((left(s)==1 and top(s)==1) and (width(s)==3 and height(s)==3))", OK);
   ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | ((left(s)==1 and top(s)==3) and (width(s)==2 and height(s)==2))", wrong);
   ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | ((left(s)==1 and top(s)==3) and (width(s)==3 and height(s)==3))", OK);
-  ("let s = {rect(0,0,2,2),{rect(1,1,2,2),rect(2,2,2,2)}} in s: shape | ((left(s)==0 and top(s)==0) and (width(s)==4 and height(s)==4))", wrong);
+
+  ("let s = {rect(0,0,2,2),{rect(1,1,2,2),rect(2,2,2,2)}} in s: shape | ((left(s)==0 and top(s)==0) and (width(s)==4 and height(s)==4))", OK);
+  ("let s = {$rect(0,0,2,2),{rect(1,1,2,2),rect(2,2,2,2)}} in s: shape | ((left(s)==0 and top(s)==0) and (width(s)==4 and height(s)==4))", wrong);
 
   ("let s = rect(0,0,0,0) in s: shape", wrong);
   ("let s = circle(1,1,2) in s: shape", wrong);
@@ -238,6 +241,31 @@ let test_cases = [
   ("let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,1+1,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
 
   ("let a = 1+1 in let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,a,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
+  ("let a = {{rect(0,0,1,1)}, rect(3,3,1,1)} in a: shape | (left(a)==0 and width(a)==3)", wrong);
+  ("let a = {{rect(0,0,1,1)}, rect(3,3,1,1)} in a: shape | (left(a)==0 and width(a)==4)", OK);
+
+  ("let a = fun (b: int | b >= 0): (c: int | c >= 10) -> b + 10 in let d = fun (b: int): (c: int | c > 0) -> 1 in a(d(0))", OK);
+  ("let a = fun (b: int | b >= 0): (c: int | c >= 10) -> b + 10 in let d = fun (b: int): (c: int | c < 0) -> -1 in a(d(0))", wrong);
+
+  ("let f = fun (x: shape): (r: shape | top(r) == top(x)) -> x in let s = f(rect(0,0,2,2)) in s: shape | top(s) == 0", OK);
+
+  ("let rec f = fun(a: int | a > 0): (b: int | b >= a) -> (if a > 5 then a else a + f(a)) in f(3)", OK);
+  ("let rec f = fun(a: int | a > 0): (b: int | b >= a) -> (if a > 5 then a else a + f(a)) in f(-1)", wrong);
+
+  ("let rec f = fun(s: shape, a: int | a > 0 and a == top(s)): (r: int) -> 1 in f(rect(1,1,1,1),1)", OK);
+  ("let rec f = fun(s: shape, a: int | a > 0 and a == top(s)): (r: int) -> 1 in f(rect(1,2,1,1),1)", wrong);
+  
+  ("let rec f = fun(s: shape, a: int | a == top(s)): (r: shape | top(r) <= a) -> " ^
+   " (let ret = {s, rect(a - 1, a - 1, 1, 1)} in" ^
+   " if a > 3 then f(ret, a - 1) else ret) in let final = f(rect(5, 5, 2, 2), 5) in final", wrong);
+
+  ("let rec f = fun(s: shape, a: int | a > 2 and a == top(s)): (r: shape | top(r) <= a) -> " ^
+   " (let ret = {s, rect(a - 1, a - 1, 1, 1)} in" ^
+   " if a > 3 then f(ret, a - 1) else ret) in let final = f(rect(5, 5, 2, 2), 5) in final", OK);
+
+  ("let rec f = fun(s: shape, a: int | a > 2 and a == top(s)): (r: shape | top(r) > 0) -> " ^
+   " (let ret = {s, rect(a - 1, a - 1, 1, 1)} in" ^
+   " if a > 3 then f(ret, a - 1) else ret) in let final = f(rect(5, 5, 2, 2), 5) in final", OK);
 ]
 
 
