@@ -166,16 +166,15 @@ let assert_shape_bound target l t w h =
   assert_eq ("(height " ^ target ^ ")") h
 
 let rec check_contract if_clause fn_env local_env contract_expr =
-  check_contract_internal if_clause (fun () ->
-      assert_false (check_value Formula if_clause fn_env local_env contract_expr))
+  check_contract_internal if_clause (check_value Formula if_clause fn_env local_env contract_expr)
 
-and check_contract_internal if_clause fn = 
+and check_contract_internal if_clause translated_check_expr = 
   Smt.push_pop (fun () ->
       begin match if_clause with
         | Some translated_cond_expr -> assert_true translated_cond_expr
         | None -> ()
       end ;
-      fn ();
+      assert_false translated_check_expr;
       match Smt.check_sat () with
       | Unsat -> (* OK *) ()
       | Sat -> error ("SMT solver returned sat.")
@@ -241,7 +240,7 @@ and check_ge_zero if_clause fn_env local_env expr =
 and check_builtin if_clause fn_env local_env checkfn expr =
   let checkee_expr = check_value Term if_clause fn_env local_env expr in
   let translated_expr = checkfn checkee_expr in
-  check_contract_internal if_clause (fun () -> assert_false translated_expr);
+  check_contract_internal if_clause translated_expr;
   checkee_expr
 
 and check_function_call if_clause fn_env local_env fn_expr arg_expr_list =
@@ -353,12 +352,11 @@ and check_value expected_result if_clause fn_env local_env expr =
     if check_overlap then
     List.iteri (fun i -> fun a -> 
       List.iteri (fun j -> fun b ->
-        if j > i then check_contract_internal if_clause (fun () -> 
-          assert_false ("(or (or " ^
+        if j > i then check_contract_internal if_clause ("(or (or " ^
             "(<= (+ (left " ^ a ^ ") (width " ^ a ^ ")) (left " ^ b ^ "))" ^
             "(<= (+ (top " ^ a ^ ") (height " ^ a ^ ")) (top " ^ b ^ "))" ^ ") (or " ^
             "(<= (+ (left " ^ b ^ ") (width " ^ b ^ ")) (left " ^ a ^ "))" ^
-            "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))")) else ()
+            "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))") else ()
       ) child_shapes) child_shapes else ();
     assert_shape_has var_name child_shapes;
     var_name

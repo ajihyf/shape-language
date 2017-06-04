@@ -168,6 +168,7 @@ let test_cases = [
 
   (* function subtyping *)
   ("(fun x -> x + 1) : int -> int", OK);
+  ("(fun (x: int) -> x + 1)(1 : int)", OK);
   ("let f = fun x -> x + 1 in f : int -> int", OK);
   ("let f = fun(x : int | x > 0) : (y : int | y == x + 1) -> x + 1 in " ^
    "f : (x : int | x > 0) -> int", OK);
@@ -230,7 +231,7 @@ let test_cases = [
   ("let s = {rect(1,1,1,1),rect(2,2,2,2)} in s: shape | ((left(s)==1 and top(s)==1) and (width(s)==3 and height(s)==3))", OK);
   ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | ((left(s)==1 and top(s)==3) and (width(s)==2 and height(s)==2))", wrong);
   ("let s = {rect(2,3,2,2),line(1,6,2,3)} in s: shape | ((left(s)==1 and top(s)==3) and (width(s)==3 and height(s)==3))", OK);
-  
+
   ("let s = {rect(0,0,2,2),{rect(1,1,2,2),rect(2,2,2,2)}} in s: shape | ((left(s)==0 and top(s)==0) and (width(s)==4 and height(s)==4))", OK);
   ("let s = {$rect(0,0,2,2),{rect(1,1,2,2),rect(2,2,2,2)}} in s: shape | ((left(s)==0 and top(s)==0) and (width(s)==4 and height(s)==4))", wrong);
 
