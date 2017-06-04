@@ -146,6 +146,9 @@ let z3_min e1 e2 =
 let z3_max e1 e2 =
   "(ite " ^ "(>= " ^ e1 ^ " " ^ e2 ^ ")" ^ " " ^ e1 ^ " " ^ e2 ^ ")"
 
+let z3_delta e1 e2 =
+  "(ite " ^ "(>= (- " ^ e1 ^ " " ^ e2 ^ ") 0) (- " ^ e1 ^ " " ^ e2 ^ ") (- " ^ e2 ^ " " ^ e1 ^ "))"
+
 let assert_shape_has target shapes =
   let left_str = (combine_shape_attr z3_min (fun hd -> "left " ^ hd) shapes) in
   let top_str = (combine_shape_attr z3_min (fun hd -> "top " ^ hd) shapes) in
@@ -156,13 +159,23 @@ let assert_shape_has target shapes =
   assert_eq ("(+ (left " ^ target ^ ") (width " ^ target ^ "))") right_str;
   assert_eq ("(+ (top " ^ target ^ ") (height " ^ target ^ "))") bottom_str
 
+let assert_shape_bound target l t w h =
+  assert_eq ("(left " ^ target ^ ")") l;
+  assert_eq ("(top " ^ target ^ ")") t;
+  assert_eq ("(width " ^ target ^ ")") w;
+  assert_eq ("(height " ^ target ^ ")") h
+
 let rec check_contract if_clause fn_env local_env contract_expr =
+  check_contract_internal if_clause (fun () ->
+      assert_false (check_value Formula if_clause fn_env local_env contract_expr))
+
+and check_contract_internal if_clause fn = 
   Smt.push_pop (fun () ->
       begin match if_clause with
         | Some translated_cond_expr -> assert_true translated_cond_expr
         | None -> ()
       end ;
-      assert_false (check_value Formula if_clause fn_env local_env contract_expr) ;
+      fn ();
       match Smt.check_sat () with
       | Unsat -> (* OK *) ()
       | Sat -> error ("SMT solver returned sat.")
@@ -222,7 +235,14 @@ and check_function_subtype if_clause fn_env local_env fn_expr expected_fn_ty =
           check_contract if_clause fn_env return_ty_local_env expr
       end)
 
+and check_ge_zero if_clause fn_env local_env expr =
+  check_builtin if_clause fn_env local_env (fun checkee_expr -> translate_builtin_and_uninterpreted ">=" [checkee_expr; "0"]) expr
 
+and check_builtin if_clause fn_env local_env checkfn expr =
+  let checkee_expr = check_value Term if_clause fn_env local_env expr in
+  let translated_expr = checkfn checkee_expr in
+  check_contract_internal if_clause (fun () -> assert_false translated_expr);
+  checkee_expr
 
 and check_function_call if_clause fn_env local_env fn_expr arg_expr_list =
   let (closure_local_env, fn_ty) = check_function if_clause fn_env local_env fn_expr in
@@ -333,10 +353,45 @@ and check_value expected_result if_clause fn_env local_env expr =
     assert_shape_has var_name child_shapes;
     var_name
   | EFix(_, _) -> error "not implemented"
-  | ERect(l, t, w, h) -> ""
-  | ELine(p1x, p1y, p2x, p2y) -> ""
-  | ETriangle(p1x, p1y, p2x, p2y, p3x, p3y) -> ""
-  | ECircle(cx, cy, r) -> ""
+  | ERect(l, t, w, h) ->
+    let var_name = declare_new_var expr.ty in
+    let [l; t] = List.map (check_ge_zero if_clause fn_env local_env) [l; t] in
+    let [w; h] = List.map (check_builtin if_clause fn_env local_env (fun x -> 
+      translate_builtin_and_uninterpreted ">=" [x; "1"])) [w; h] in
+    assert_shape_bound var_name l t w h;
+    var_name
+  | ELine(p1x, p1y, p2x, p2y) ->
+    let var_name = declare_new_var expr.ty in
+    let [p1x; p1y; p2x; p2y] = List.map (check_ge_zero if_clause fn_env local_env) [p1x; p1y; p2x; p2y] in
+    assert_shape_bound var_name (z3_min p1x p2x) (z3_min p1y p2y) (z3_delta p1x p2x) (z3_delta p1y p2y);
+    var_name
+  | ETriangle(p1x, p1y, p2x, p2y, p3x, p3y) ->
+    let var_name = declare_new_var expr.ty in
+    let [p1x; p1y; p2x; p2y; p3x; p3y] = List.map (check_ge_zero if_clause fn_env local_env) [p1x; p1y; p2x; p2y; p3x; p3y] in
+    assert_shape_bound var_name
+      (z3_min p1x (z3_min p2x p3x))
+      (z3_min p1y (z3_min p2y p3y))
+      (z3_max (z3_delta p1x p3x) (z3_max (z3_delta p1x p2x) (z3_delta p2x p3x)))
+      (z3_max (z3_delta p1y p3y) (z3_max (z3_delta p1y p2y) (z3_delta p2y p3y)));
+    var_name
+  | ECircle(cx, cy, r) ->
+    let var_name = declare_new_var expr.ty in
+    let [cx; cy] = List.map (check_ge_zero if_clause fn_env local_env) [cx; cy] in
+    let r = check_builtin if_clause fn_env local_env (fun r ->
+        translate_builtin_and_uninterpreted "and" [
+            translate_builtin_and_uninterpreted ">=" [r; "1"];
+            translate_builtin_and_uninterpreted "and" [
+              translate_builtin_and_uninterpreted "<=" [r; cx];
+              translate_builtin_and_uninterpreted "<=" [r; cy]
+            ]
+          ]
+      ) r in
+    assert_shape_bound var_name
+      ("(- " ^ cx ^ " " ^ r ^ ")")
+      ("(- " ^ cy ^ " " ^ r ^ ")")
+      ("(+ " ^ r ^ " " ^ r ^ ")")
+      ("(+ " ^ r ^ " " ^ r ^ ")");
+    var_name
   
 
 and check_function if_clause fn_env local_env expr =
