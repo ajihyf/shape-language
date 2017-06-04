@@ -21,4 +21,7 @@ clean:
 build:
 			$(OCB) test.byte
 
-.PHONY: 	clean build
+draw:
+		  $(OCB) test_draw.byte
+
+.PHONY: 	clean build draw
