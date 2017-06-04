@@ -84,19 +84,21 @@ let print_map map =
     Ctx.StringMap.iter print_record map
 
 let rec eval1 ctx t =
-    (*print_endline "ctx: ";*)
-    (*print_map ctx;*)
-    (*print_newline();*)
-    (*print_endline "term: ";*)
-    (*print_string (string_of_s_expr t);*)
-    (*print_newline();*)
-    (*print_newline();*)
+    (*print_endline "ctx: ";
+    print_map ctx;
+    print_newline();
+    print_endline "term: ";
+    print_string (string_of_s_expr t);
+    print_newline();
+    print_newline();*)
     match t with
-      SVar(name) ->
+    | SVar(name) ->
         (*print_endline (name ^ "  var");*)
         Ctx.lookup name ctx
     | SIf(SBool(v), t2, t3) ->
-        if v then eval1 ctx t2 else eval1 ctx t3
+        if v then
+          if isval t2 then t2 else eval1 ctx t2
+        else if isval t3 then t3 else eval1 ctx t3
     | SIf(t1, t2, t3) ->
         let t1' = eval1 ctx t1 in
             eval1 ctx (SIf(t1', t2, t3))
@@ -104,6 +106,12 @@ let rec eval1 ctx t =
         let new_ctx = Ctx.extend t1 t2 ctx in
             eval1 new_ctx t3
     | SLet(t1, t2, t3) ->
+        let t2' = eval1 ctx t2 in
+            SLet(t1, t2', t3)
+    | SLetRec(t1, t2, t3) when isval t2 ->
+        let new_ctx = Ctx.extend t1 t2 ctx in
+            eval1 new_ctx t3
+    | SLetRec(t1, t2, t3) ->
         let t2' = eval1 ctx t2 in
             SLet(t1, t2', t3)
     | SCall(SVar(name), t2) when (not (list_isval t2)) ->
@@ -176,11 +184,12 @@ let rec eval1 ctx t =
             [] -> []
           | x::rest when (not (isval x))-> (eval1 ctx x)::(eval_shapes rest)
           | x::rest -> x::(eval_shapes rest)) in
-        SShape(eval_shapes t1, any)
+        let tmp = (SShape((eval_shapes t1), any)) in
+          if isval tmp then tmp else (eval1 ctx tmp)
     | _ -> raise (Error "no rule to apply")
 
 let rec eval ctx t =
     try
-        let t' = eval1 ctx t
-        in (*print_endline "eval again" ;*)eval ctx t'
+        let t' = eval1 ctx t in
+          eval ctx t'
     with (Error "no rule to apply") -> t
