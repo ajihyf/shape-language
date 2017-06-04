@@ -1,63 +1,4 @@
-type name = string
-type id = int
-type level = int
-
-
-(* Types *)
-type 'a ty =
-  | TConst of name
-  | TApp of name * 'a ty list
-  | TArrow of ('a refined_ty) list * ('a refined_ty)
-  | TVar of ('a tvar) ref
-
-and 'a refined_ty =
-  | Plain of 'a ty
-  | Named of name * 'a ty
-  | Refined of name * 'a ty * 'a
-
-and 'a tvar =
-  | Unbound of id * level
-  | Link of 'a ty
-  | Generic of id
-
-type s_ty = s_expr ty
-and s_refined_ty = s_expr refined_ty
-
-and s_expr =
-  | SVar of name
-  | SBool of bool
-  | SInt of int
-  | SCall of s_expr * s_expr list
-  | SFun of s_param list * s_refined_ty option * s_expr
-  | SLet of name * s_expr * s_expr
-  | SIf of s_expr * s_expr * s_expr
-  | SCast of s_expr * s_ty * s_expr option
-  | SFix of s_expr
-  | SShape of s_expr list
-
-and s_param = name * (s_ty * s_expr option) option
-
-
-(* Typed expressions *)
-type t_ty = t_expr ty
-and t_refined_ty = t_expr refined_ty
-
-and t_expr = {shape : t_expr_shape; ty : t_ty}
-
-and t_expr_shape =
-  | EVar of name
-  | EBool of bool
-  | EInt of int
-  | ECall of t_expr * t_expr list
-  | EFun of t_param list * t_refined_ty option * t_expr
-  | ELet of name * t_expr * t_expr
-  | EIf of t_expr * t_expr * t_expr
-  | ECast of t_expr * t_ty * t_expr option
-  | EFix of name * t_expr
-  | EShape of t_expr list
-
-and t_param = name * t_ty * t_expr option
-
+open Expr
 
 exception Error
 
@@ -75,9 +16,16 @@ end
 
 let isval t =
     match t with
-      SVar(_) -> true
-    | SBool(_) -> true
+      SBool(_) -> true
     | SInt(_) -> true
+    | _ -> false
+
+let rec list_isval t =
+    match t with
+      [SBool(_)] -> true
+    | [SInt(_)] -> true
+    | SBool(_)::rest -> list_isval rest
+    | SInt(_)::rest -> list_isval rest
     | _ -> false
 
 let rec is_true ctx t =
@@ -139,6 +87,7 @@ let rec eval1 ctx t =
     | SCast(t1, t2, t3) ->
         let t1' = eval1 ctx t1 in
             SCast(t1', t2, t3)
+    | SFun(t1, t2, t3) -> SFun(t1, t2, t3)
     | _ -> raise Error
 
 let rec eval ctx t =
@@ -147,8 +96,9 @@ let rec eval ctx t =
         in eval ctx t'
     with Error -> t;;
 
-let a = eval Ctx.StringMap.empty (SIf(SBool(false), SInt(1), SCall(SVar("+"), [SInt(1); SInt(2)]))) in
+let a = eval Ctx.StringMap.empty (SLet("f", SFun([("x", None); ("y", Some (TConst "int", None))], None,
+                      SCall(SVar "+", [SVar "y"; SInt(1)])), SCall(SVar "f", [SInt(1); SInt(2)]))) in
     match a with
     SBool(_) -> print_string("True")
-    | SCall(_, _) -> print_string("False")
+    | SInt(v) -> print_int(v)
     | _ -> print_string("Shall not see this")
