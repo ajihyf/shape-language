@@ -203,6 +203,8 @@ and string_of_t_expr expr : string =
     | ECast(expr, ty, None) -> simple_expr expr ^ " : " ^ string_of_t_ty_ann ty
     | ECast(expr, ty, Some contract_expr) ->
       simple_expr expr ^ " : " ^ string_of_t_ty_ann ty ^ " | " ^ complex_expr contract_expr
+    | ELetRec(var_name, value_expr, body_expr) ->
+      "let rec " ^ var_name ^ " = " ^ complex_expr value_expr ^ " in " ^ complex_expr body_expr
     | _ -> simple_expr expr
 
   and simple_expr expr = match expr.shape with

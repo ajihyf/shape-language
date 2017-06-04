@@ -79,6 +79,9 @@ let test_cases = [
 
   ("rect(1,2,s1,s4)", OK (SRect(SInt 1, SInt 2, SVar "s1", SVar "s4")));
   ("circle(1,2,s1)", OK (SCircle(SInt 1, SInt 2, SVar "s1")));
+  ("let rec f = fun (a: int) -> f(a) in f (3)",
+   OK (SLetRec("f", SFun([("a", Some (TConst "int", None))], None,
+                         SCall(SVar "f", [SVar "a"])), SCall(SVar "f", [SInt 3]))));
 ]
 
 
