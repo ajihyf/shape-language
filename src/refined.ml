@@ -236,7 +236,7 @@ and check_function_subtype if_clause fn_env local_env fn_expr expected_fn_ty =
       end)
 
 and check_ge_zero if_clause fn_env local_env expr =
-  check_builtin if_clause fn_env local_env (fun checkee_expr -> translate_builtin_and_uninterpreted ">=" [checkee_expr; "0"]) expr
+  check_builtin if_clause fn_env local_env (fun checkee_expr -> "(>= " ^ checkee_expr ^ " 0)") expr
 
 and check_builtin if_clause fn_env local_env checkfn expr =
   let checkee_expr = check_value Term if_clause fn_env local_env expr in
@@ -350,14 +350,24 @@ and check_value expected_result if_clause fn_env local_env expr =
         )
         shape_list
     in
+    (* Check for collision *)
+    List.iteri (fun i -> fun a -> 
+      List.iteri (fun j -> fun b ->
+        if j > i then check_contract_internal if_clause (fun () -> 
+          assert_false ("(or (or " ^
+            "(<= (+ (left " ^ a ^ ") (width " ^ a ^ ")) (left " ^ b ^ "))" ^
+            "(<= (+ (top " ^ a ^ ") (height " ^ a ^ ")) (top " ^ b ^ "))" ^ ") (or " ^
+            "(<= (+ (left " ^ b ^ ") (width " ^ b ^ ")) (left " ^ a ^ "))" ^
+            "(<= (+ (top " ^ b ^ ") (height " ^ b ^ ")) (top " ^ a ^ "))" ^ "))")) else ()
+      ) child_shapes) child_shapes;
+    (* Check for collision - end *)
     assert_shape_has var_name child_shapes;
     var_name
   | EFix(_, _) -> error "not implemented"
   | ERect(l, t, w, h) ->
     let var_name = declare_new_var expr.ty in
     let [l; t] = List.map (check_ge_zero if_clause fn_env local_env) [l; t] in
-    let [w; h] = List.map (check_builtin if_clause fn_env local_env (fun x -> 
-      translate_builtin_and_uninterpreted ">=" [x; "1"])) [w; h] in
+    let [w; h] = List.map (check_builtin if_clause fn_env local_env (fun x -> "(>= " ^ x ^ " 1)")) [w; h] in
     assert_shape_bound var_name l t w h;
     var_name
   | ELine(p1x, p1y, p2x, p2y) ->
@@ -378,13 +388,7 @@ and check_value expected_result if_clause fn_env local_env expr =
     let var_name = declare_new_var expr.ty in
     let [cx; cy] = List.map (check_ge_zero if_clause fn_env local_env) [cx; cy] in
     let r = check_builtin if_clause fn_env local_env (fun r ->
-        translate_builtin_and_uninterpreted "and" [
-            translate_builtin_and_uninterpreted ">=" [r; "1"];
-            translate_builtin_and_uninterpreted "and" [
-              translate_builtin_and_uninterpreted "<=" [r; cx];
-              translate_builtin_and_uninterpreted "<=" [r; cy]
-            ]
-          ]
+        "(and (>= " ^ r ^ " 1) (and (<= " ^ r ^ " " ^ cx ^ ") (<= " ^ r ^ " " ^ cy ^ ")))"
       ) r in
     assert_shape_bound var_name
       ("(- " ^ cx ^ " " ^ r ^ ")")
