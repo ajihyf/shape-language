@@ -8,9 +8,14 @@ type result =
   | Fail
 
 let test_cases = [
-  ("", Fail);
-  ("a", Fail);
   ("3 + 2", OK(SInt 5));
+  ("let x = 1 in x", OK(SInt 1));
+  ("let f = fun (x : int) -> 1 + x in f(1)", OK(SInt 2));
+  ("let f = fun (x : int | x > 0, y : int | y == x + 1) -> x + 1 in f(1, 2)", OK(SInt 2));
+  ("let f = fun (x : int | x > 3) : (z : int | z > 0) -> x - 1 in f(4)", OK(SInt 3));
+  ("let f = fun (x: Int -> Int) -> x in let m = fun (y: Int) -> y + 1 in m(1)", OK(SInt 2));
+  ("let f = fun (x: Int) -> x + 1 in let z = f(0) in if z > 0 then 1 else 2", OK(SInt 1));
+  ("if 1 == 1 then 1 else 2", OK(SInt 1));
 ]
 
 let string_of_result = function
