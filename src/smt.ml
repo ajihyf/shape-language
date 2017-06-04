@@ -25,8 +25,8 @@ let stop () =
       end ;
       if (process_status <> Unix.WEXITED 0) || log_Z3_input then begin
         print_endline "\n\nZ3 LOG\n" ;
+        print_endline !log;
       end ;
-      print_endline !log;
       if !stack != 0 then Printf.printf "\nERROR: STACK = %i\n\n" !stack
     end ;
     info := None

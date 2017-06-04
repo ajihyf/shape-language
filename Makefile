@@ -13,10 +13,13 @@ OCB_FLAGS = -use-ocamlfind             -I src  # uses ocamlyacc
 
 OCB = 		ocamlbuild $(OCB_FLAGS)
 
-default: build
+default: main
 
 clean:
 			$(OCB) -clean
+
+main:
+			$(OCB) main.byte
 
 build:
 			$(OCB) test.byte
@@ -24,4 +27,4 @@ build:
 draw:
 		  $(OCB) test_draw.byte
 
-.PHONY: 	clean build draw
+.PHONY: 	clean build draw main
