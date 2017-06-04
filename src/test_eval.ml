@@ -8,20 +8,10 @@ type result =
   | Fail
 
 let test_cases = [
-  ("3 + 2", OK(SInt 5));
-  ("let x = 1 in x", OK(SInt 1));
-  ("let x = 1 in x + 1", OK(SInt 2));
-  ("let f = fun (x : int) -> 1 + x in f(1)", OK(SInt 2));
-  ("let f = fun (x : int | x > 0, y : int | y == x + 1) -> x + 1 in f(1, 2)", OK(SInt 2));
-  ("let f = fun (x : int | x > 3) : (z : int | z > 0) -> x - 1 in f(4)", OK(SInt 3));
-  ("let f = fun (x: Int -> Int) -> x in let m = fun (y: Int) -> y + 1 in m(1)", OK(SInt 2));
-  ("let f = fun (x: Int) -> x + 1 in if f(0) > 0 then 1 else 2", OK(SInt 1));
-  ("let x = 1 in rect(x, 2, 1, 2)", OK(SRect(SInt 1, SInt 2, SInt 1, SInt 2)));
-  ("let s = {rect(1,1,1,1)} in s", OK(SShape([SRect(SInt 1, SInt 1, SInt 1, SInt 1)])));
-  ("let a = 1+1 in let s = {circle(1,1,1),triangle(1,1,1,1,1,1),rect(2,a,1,1)} in s",
-    OK(SShape([SCircle(SInt 1, SInt 1, SInt 1); STriangle(SInt 1, SInt 1, SInt 1, SInt 1, SInt 1, SInt 1);
-               SRect(SInt 2, SInt 2, SInt 1, SInt 1)])));
+      ("let f = fun(x: Int) -> (if x > 5 then x else f(x + 1)) in f(1)", OK(SInt 6));
+      ("let f = fun(x: Int->Int) -> x in let g = fun(x: Int) -> x + 1 in let m = f(g) in m(1)", OK(SInt 2));
 ]
+
 
 let string_of_result = function
   | Fail -> "Fail"
