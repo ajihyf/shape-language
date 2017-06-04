@@ -43,6 +43,8 @@ let primitives = [
   ("triangle", "(p1x: int | p1x >=0, p1y: int | p1y >= 0, p2x: int | p2x >= 0, p2y: int | p2y >= 0, p3x: int | p3x >= 0, p3y: int | p3y >= 0)" ^
                "-> (s: shape | (left(s)==my_min(my_min(p1x, p2x), p3x) and top(s)==my_min(my_min(p1y, p2y), p3y)) and " ^
                "(width(s)==my_max(my_abs(p3x-p1x), my_abs(p2x-p1x)) and height(s)==my_max(my_abs(p3y-p1y), my_abs(p2y-p1y))))");
+  ("eclipse", "(cx: int | cx > 0, cy: int | cy > 0, rw: int | (rw > 0 and rw <= cx), rh: int | (rh > 0 and rh <= cy))
+              -> (s: shape | (left(s)==(cx-rw) and top(s)==(cy-rh)) and (width(s)==2*rw and height(s)==2*rh))");
   ("circle", "(cx: int | cx >= 0, cy: int | cy >= 0, r: int | (r > 0) and (r < cx and r < cy)) " ^
              "-> (s: shape | (left(s)==(cx-r) and top(s)==(cy-r)) and (width(s)==r and height(s)==r))");*)
 

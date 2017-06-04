@@ -1,6 +1,6 @@
 open Expr
 open Printing
-
+open Utils
 
 (* Utils *)
 exception Error of string
@@ -33,9 +33,6 @@ module Env = struct
   let map f env = StringMap.map f env
   let fold f env init = StringMap.fold f env init
 end
-
-
-
 
 (* Unification *)
 let occurs_check_adjust_levels tvar_id tvar_level ty =
@@ -181,14 +178,28 @@ let rec infer_expr env level = function
       | Some contract_s_expr -> Some (infer_contract env level contract_s_expr)
     in
     {shape = ECast(t_expr, instantiated_t_ty, maybe_contract_t_expr); ty = plain_t_ty}
+<<<<<<< HEAD
   | SFix(_) -> error "not implemented"
   | SShape(shape_list, check_overlap) ->
+=======
+  | SLetRec(var_name, value_s_expr, body_s_expr) ->
+    let value_t_expr = infer_expr env (level + 1) value_s_expr in
+    let generalized_ty = generalize level value_t_expr.ty in
+    let new_env = Env.extend var_name generalized_ty env in
+    let body_t_expr = infer_expr new_env level body_s_expr in
+    {
+      shape = ELet(var_name, {shape = value_t_expr.shape; ty = generalized_ty}, body_t_expr);
+      ty = body_t_expr.ty
+    }
+  | SShape(shape_list) ->
+>>>>>>> origin/master
     let shape_t_list = List.map (fun shape_expr ->
         let shape_t_expr = infer_expr env level shape_expr in
         unify t_shape shape_t_expr.ty;
         shape_t_expr)
         shape_list
     in
+<<<<<<< HEAD
     {shape = EShape(shape_t_list, check_overlap); ty = t_shape}
   | SRect(l, t, w, h) -> 
     let [l; t; w; h] = List.map (fun arg -> let expr = infer_expr env level arg in unify (TConst "int") expr.ty; expr) [l; t; w; h] in
@@ -202,6 +213,21 @@ let rec infer_expr env level = function
   | SCircle(cx, cy, r) -> 
     let [cx; cy; r] = List.map (fun arg -> let expr = infer_expr env level arg in unify (TConst "int") expr.ty; expr) [cx; cy; r] in
     {shape = ECircle(cx, cy, r); ty = TConst "shape"}
+=======
+    {shape = EShape(shape_t_list); ty = t_shape}
+  | SRect(l, t, w, h) ->
+    let (l, t, w, h) = map_tuple4 (infer_expr env level) (l, t, w, h) in
+    {shape = ERect(l, t, w, h); ty = t_shape}
+  | SLine(p1x, p1y, p2x, p2y) ->
+    let (p1x, p1y, p2x, p2y) = map_tuple4 (infer_expr env level) (p1x, p1y, p2x, p2y) in
+    {shape = ELine(p1x, p1y, p2x, p2y); ty = t_shape}
+  | STriangle(p1x, p1y, p2x, p2y, p3x, p3y) ->
+    let (p1x, p1y, p2x, p2y, p3x, p3y) = map_tuple6 (infer_expr env level) (p1x, p1y, p2x, p2y, p3x, p3y) in
+    {shape = ETriangle(p1x, p1y, p2x, p2y, p3x, p3y); ty = t_shape}
+  | SCircle(cx, cy, r) ->
+    let (cx, cy, r) = map_tuple3 (infer_expr env level) (cx, cy, r) in
+    {shape = ECircle(cx, cy, r); ty = t_shape}
+>>>>>>> origin/master
 
 and instantiate_and_infer_ty env level ty = infer_ty env level (instantiate level ty)
 

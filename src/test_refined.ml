@@ -128,19 +128,19 @@ let test_cases = [
    "in " ^
    "let abs= fun(i) : (n : int | (if i > 0 then n == i else n == -i)) -> -min(-i, i) in " ^
    "abs(-3)", OK);
-  ("let max = fun(x, y) : (z : int | (if x > y then z == x else z == y)) -> " ^
-   " if x > y then x else y " ^
-   "in " ^
-   "let abs = fun(x) : (z : int | z == (if x >= 0 then x else -x)) -> max(x, -x) in " ^
-   "fun (x : int | abs(x) <= 10) -> " ^
-   " let z = if max(square(x), 25) == 25 then " ^
-   "   3 * x + 7 * random1toN(10) " ^
-   "  else if x == 11 then " ^
-   "   0 " ^
-   "  else " ^
-   "   x " ^
-   " in " ^
-   " 100 / z", OK);
+  (*("let max = fun(x, y) : (z : int | (if x > y then z == x else z == y)) -> " ^
+    " if x > y then x else y " ^
+    "in " ^
+    "let abs = fun(x) : (z : int | z == (if x >= 0 then x else -x)) -> max(x, -x) in " ^
+    "fun (x : int | abs(x) <= 10) -> " ^
+    " let z = if max(square(x), 25) == 25 then " ^
+    "   3 * x + 7 * random1toN(10) " ^
+    "  else if x == 11 then " ^
+    "   0 " ^
+    "  else " ^
+    "   x " ^
+    " in " ^
+    " 100 / z", OK);*)
   ("let max = fun(x, y) : (z : int | (if x > y then z == x else z == y)) -> " ^
    " if x < y then x else y " ^
    "in max", wrong);
@@ -241,6 +241,11 @@ let test_cases = [
   ("let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,1+1,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
 
   ("let a = 1+1 in let s = {rect(0,0,1,1),rect(1,1,1,1),rect(2,a,1,1)} in s: shape | (width(s)==3 and height(s)==3)", OK);
+  ("let a = {{rect(0,0,1,1)}, rect(3,3,1,1)} in a: shape | (left(a)==0 and width(a)==3)", wrong);
+  ("let a = {{rect(0,0,1,1)}, rect(3,3,1,1)} in a: shape | (left(a)==0 and width(a)==4)", OK);
+
+  ("let a = fun (b: int | b >= 0): (c: int | c >= 10) -> b + 10 in let d = fun (b: int): (c: int | c > 0) -> 1 in a(d(0))", OK);
+  ("let a = fun (b: int | b >= 0): (c: int | c >= 10) -> b + 10 in let d = fun (b: int): (c: int | c < 0) -> -1 in a(d(0))", wrong);
 ]
 
 

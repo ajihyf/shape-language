@@ -15,7 +15,7 @@ rule token = parse
 
   | "fun"         { FUN }
   | "let"         { LET }
-  | "fix"         { FIX }
+  | "rec"         { REC }
   | "in"          { IN }
   | "forall"      { FORALL }
   | "some"        { SOME }
@@ -70,7 +70,7 @@ rule token = parse
 let string_of_token = function
   | FUN -> "fun"
   | LET -> "let"
-  | FIX -> "fix"
+  | REC -> "rec"
   | IN -> "in"
   | FORALL -> "forall"
   | SOME -> "some"
