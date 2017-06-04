@@ -18,6 +18,7 @@ let isval t =
     match t with
       SBool(_) -> true
     | SInt(_) -> true
+    | SFun(_,_,_) -> true
     | _ -> false
 
 let rec list_isval t =
@@ -96,8 +97,8 @@ let rec eval ctx t =
         in eval ctx t'
     with Error -> t;;
 
-let a = eval Ctx.StringMap.empty (SLet("f", SFun([("x", None); ("y", Some (TConst "int", None))], None,
-                      SCall(SVar "+", [SVar "y"; SInt(1)])), SCall(SVar "f", [SInt(1); SInt(2)]))) in
+let a = eval Ctx.StringMap.empty (SLet("f", SFun([("y", Some (TConst "int", None))], None,
+                      SCall(SVar "+", [SInt(1); SInt(1)])), SCall(SVar "f", [SInt(1); SInt(2)]))) in
     match a with
     SBool(_) -> print_string("True")
     | SInt(v) -> print_int(v)
