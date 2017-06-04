@@ -114,7 +114,7 @@ let rec eval1 ctx t =
             eval1 new_ctx t3
     | SLetRec(t1, t2, t3) ->
         let t2' = eval1 ctx t2 in
-            SLet(t1, t2', t3)
+            eval1 ctx (SLet(t1, t2', t3))
     | SCall(SVar(name), t2) when (not (list_isval t2)) ->
         let rec eval_params t2' =
             (match t2' with
@@ -144,7 +144,7 @@ let rec eval1 ctx t =
     | SCast(t1, t2, t3) when isval t1 -> t1
     | SCast(t1, t2, t3) ->
         let t1' = eval1 ctx t1 in
-            SCast(t1', t2, t3)
+            eval1 ctx (SCast(t1', t2, t3))
     | SRect(t1, t2, t3, t4) when (not (isval t1)) ->
         let t1' = eval1 ctx t1 in SRect(t1', t2, t3, t4)
     | SRect(t1, t2, t3, t4) when (not (isval t2)) ->
