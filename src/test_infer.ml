@@ -81,6 +81,10 @@ let test_infer_and_syntax = [
   ("fun() : ((x : int | x > 0) -> int) -> id", OK "() -> int -> int");
   ("fun() : (x : int | x > 0) -> 1", OK "() -> int");
   ("fun(a : int) : (f : int -> int | f(a) == 1) -> fun(b : int) -> 1", OK "int -> int -> int");
+
+  ("let rec f = fun(a : int) -> f(a) in f", fail);
+  ("let rec f = fun(a : int): int -> f(a) in f", OK "int -> int");
+  ("let rec f = fun(a: int): (b: int | b >= a) -> (if a > 5 then a else a + f(a)) in f(3)", OK "int");
 ]
 
 

@@ -104,7 +104,6 @@ let instantiate level ty =
   in
   f ty
 
-
 (* Type inference and typed tree construction *)
 let rec match_fun_ty num_params = function
   | TArrow(param_r_ty_list, return_r_ty) ->
@@ -186,6 +185,24 @@ let rec infer_expr env level = function
         shape_list
     in
     {shape = EShape(shape_t_list, check_overlap); ty = t_shape}
+  | SLetRec(var_name, value_s_expr, body_s_expr) -> (
+      match value_s_expr with
+        SFun(param_list, maybe_return_t, fun_body_expr) ->
+        (match maybe_return_t with
+           Some(return_t) ->
+           let (new_env, t_param_list, param_t_r_ty_list) = infer_params env level param_list in
+           let (new_env, infer_return_t) = infer_r_ty new_env level return_t in
+           let fix_fn_ty = TArrow(param_t_r_ty_list, infer_return_t) in
+           let fix_fn_env = Env.extend var_name fix_fn_ty env in
+           let value_t_expr = infer_function fix_fn_env (level + 1) param_list maybe_return_t fun_body_expr in
+           let body_t_expr = infer_expr fix_fn_env level body_s_expr in
+           {
+             shape = ELetRec(var_name, {shape = value_t_expr.shape; ty = fix_fn_ty}, body_t_expr);
+             ty=body_t_expr.ty
+           }
+         | _ -> error "let rec should accept a function with return type.tys defined")
+      | _ -> error "let rec should accept a function with return types defined"
+    )
   | SRect(l, t, w, h) -> 
     let (l, t, w, h) = map_tuple4 (fun arg -> let expr = infer_expr env level arg in unify (TConst "int") expr.ty; expr) (l, t, w, h) in
     {shape = ERect(l, t, w, h); ty = TConst "shape"}
@@ -236,7 +253,7 @@ and infer_r_ty env level = function
     let t_expr = infer_contract new_env level s_expr in
     (new_env, Refined(name, t_ty, t_expr))
 
-and infer_function env level s_param_list maybe_return_s_r_ty body_s_expr =
+and infer_params env level s_param_list =
   let (new_env, rev_t_param_list, rev_param_t_r_ty_list) = List.fold_left
       (fun (env, rev_t_param_list, rev_param_t_r_ty_list) s_param ->
          let (new_env, t_param, param_t_ty) = match s_param with
@@ -258,6 +275,10 @@ and infer_function env level s_param_list maybe_return_s_r_ty body_s_expr =
       (env, [], []) s_param_list in
   let t_param_list = List.rev rev_t_param_list in
   let param_t_r_ty_list = List.rev rev_param_t_r_ty_list in
+  (new_env, t_param_list, param_t_r_ty_list)
+
+and infer_function env level s_param_list maybe_return_s_r_ty body_s_expr =
+  let (new_env, t_param_list, param_t_r_ty_list) = infer_params env level s_param_list in
   let body_t_expr = infer_expr new_env level body_s_expr in
   let maybe_return_t_r_ty = match maybe_return_s_r_ty with
     | None -> None
