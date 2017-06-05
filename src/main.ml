@@ -1,5 +1,4 @@
 open Format
-open Eval
 open Expr
 open Printing
 
@@ -45,25 +44,38 @@ in
 
 let alreadyImported = ref ([] : string list)
 
-let process_file f ctx =
+let process_file f =
   alreadyImported := f :: !alreadyImported;
   let expr_list = parseFile f in
-  List.iteri (fun i expr ->
+  let rec construct_rec_slet = (fun inner_expr -> function
+    | (name, expr)::rest -> SLet(name, expr, construct_rec_slet inner_expr rest)
+    | [] -> inner_expr
+  ) in
+  ignore (List.fold_left (fun (bound_tuple_list_rev, i) (bind_name, expr) ->
+    let default = (bound_tuple_list_rev, i + 1) in
     try
-      let t_expr = Infer.infer_expr Core.plain_env 0 expr in
-      Refined.check_expr t_expr ;
-      let eval_result = Eval.eval ctx expr in
-      try Draw.draw eval_result with Draw.Error ->
-      print_endline ((string_of_s_expr eval_result) ^ ": " ^ (string_of_t_ty (Infer.generalize (-1) t_expr.ty)))
-    with
-    | Infer.Error msg -> print_endline ("Infer error in " ^ (string_of_int (i + 1)) ^ "-th statement: " ^ msg)
-    | Refined.Error msg -> print_endline ("Refinement error in " ^ (string_of_int (i + 1)) ^ "-th statement: " ^ msg)
-  ) expr_list;
+      let constructed_expr = construct_rec_slet expr (List.rev bound_tuple_list_rev) in
+      let t_expr = Infer.infer_expr Core.plain_env 0 constructed_expr in
+      Refined.check_expr t_expr;
+      let eval_result = Eval.eval Eval.Ctx.StringMap.empty constructed_expr in
+      (try Draw.draw eval_result with Draw.Error ->
+      print_endline ((string_of_s_expr eval_result) ^ ": " ^ (string_of_t_ty (Infer.generalize (-1) t_expr.ty))));
+      (match bind_name with
+        | Some name -> ((name, eval_result)::bound_tuple_list_rev, i + 1)
+        | None -> default)
+    with 
+      | Infer.Error msg ->
+        print_endline ("Infer error in statement " ^ (string_of_int i) ^ ": " ^ msg); default
+      | Refined.Error msg ->
+        print_endline ("Refined error in statement " ^ (string_of_int i) ^ ": " ^ msg); default
+      | Eval.Error msg ->
+        print_endline ("Eval error in statement " ^ (string_of_int i) ^ ": " ^ msg); default
+  ) ([], 1) expr_list);
   read_line ()
 
 let main () = 
   Draw.init ();
   let inFile = parseArgs () in
-  process_file inFile Ctx.StringMap.empty;;
+  process_file inFile;;
 
 main ();

@@ -48,7 +48,7 @@ let replace_ty_constants_with_vars var_name_list ty =
 %nonassoc UNARY_MINUS
 
 %start expr_semi_seperated
-%type <Expr.s_expr list> expr_semi_seperated
+%type <(string option * Expr.s_expr) list> expr_semi_seperated
 %start expr_eof
 %type <Expr.s_expr> expr_eof
 %start ty_eof
@@ -60,8 +60,10 @@ let replace_ty_constants_with_vars var_name_list ty =
 
 expr_semi_seperated:
   | EOF        { [] }
+  | IDENT EQUALS expr SEMI expr_semi_seperated
+               { (Some $1,$3)::$5 }
   | expr SEMI expr_semi_seperated
-               { $1::$3 }
+               { (None,$1)::$3 }
 
 expr_eof:
   | expr EOF        { $1 }
