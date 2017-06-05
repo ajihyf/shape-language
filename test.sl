@@ -1,4 +1,11 @@
-let rec f = fun(s: shape, a: int | a > 2 and a == top(s)): (r: shape | top(r) > 0) ->
- (let ret = {s, rect(a - 1, a - 1, 1, 1)} in
- if a > 3 then f(ret, a - 1) else ret)
-in let final = f(rect(5, 5, 2, 2), 5) in final
+2333;
+let rec f = fun(a: int | a >= 0 and a <= 300):
+        (r: shape | (left(r)==a and top(r)==a) and (width(r)<=500-a and height(r)<=500-a)) -> (
+    let ret = rect(a, a, 50, 50) in
+    if a < 100 then {$ret, f(a + 50)} else line(a, a, a, a)
+) in 1;
+circle(300,200,200);
+let eyes = fun(centerx: int | centerx >= 160):
+        (r: shape | (left(r)==centerx-160 and width(r)==320) and (top(r)==200 and height(r)==40)) -> (
+    {$rect(centerx-160,200,80,40),rect(centerx+80,200,80,40)}
+) in {$eyes(300),triangle(300,50,250,100,350,100)};

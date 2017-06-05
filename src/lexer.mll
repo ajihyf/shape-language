@@ -46,6 +46,7 @@ rule token = parse
   | "->"    { ARROW }
   | ','     { COMMA }
   | ':'     { COLON }
+  | ';'     { SEMI }
   | '|'     { BAR }
   | '+'     { PLUS }
   | '-'     { MINUS }
@@ -94,6 +95,7 @@ let string_of_token = function
   | ARROW -> "->"
   | COMMA -> ","
   | COLON -> ":"
+  | SEMI -> ";"
   | PLUS -> "+"
   | MINUS -> "-"
   | STAR -> "*"

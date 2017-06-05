@@ -1,11 +1,12 @@
 open Expr
 open Graphics
-open Printing
 
 exception Error
 
+let init unit =
+  Graphics.open_graph " 640x480"
+
 let draw shape =
-  Graphics.open_graph " 640x480";
   let rec draw_graphics = function
     | SShape(shape_list, _) -> List.iter draw_graphics shape_list
     | SRect(SInt(l), SInt(t), SInt(w), SInt(h)) ->
@@ -16,9 +17,10 @@ let draw shape =
     | STriangle(SInt(p1x), SInt(p1y), SInt(p2x), SInt(p2y), SInt(p3x), SInt(p3y)) ->
       Graphics.moveto p1x p1y;
       Graphics.lineto p2x p2y;
-      Graphics.lineto p3x p3y
+      Graphics.lineto p3x p3y;
+      Graphics.lineto p1x p1y
     | SCircle(SInt(cx), SInt(cy), SInt(r)) ->
       Graphics.draw_circle cx cy r
-    | _ -> print_string (string_of_s_expr shape)
+    | _ -> raise Error
   in
   draw_graphics shape

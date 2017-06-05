@@ -33,7 +33,7 @@ let replace_ty_constants_with_vars var_name_list ty =
 %token FUN LET IN FORALL SOME REC
 %token AND OR NOT IF THEN ELSE TRUE FALSE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
-%token ARROW EQUALS COMMA COLON
+%token ARROW EQUALS COMMA COLON SEMI
 %token PLUS MINUS STAR SLASH PERCENT DOLLAR
 %token BAR
 %token GT LT GE LE EQ NE
@@ -47,6 +47,8 @@ let replace_ty_constants_with_vars var_name_list ty =
 %left STAR SLASH PERCENT
 %nonassoc UNARY_MINUS
 
+%start expr_semi_seperated
+%type <Expr.s_expr list> expr_semi_seperated
 %start expr_eof
 %type <Expr.s_expr> expr_eof
 %start ty_eof
@@ -55,6 +57,11 @@ let replace_ty_constants_with_vars var_name_list ty =
 %type <Expr.s_ty> ty_forall_eof
 
 %%
+
+expr_semi_seperated:
+  | EOF        { [] }
+  | expr SEMI expr_semi_seperated
+               { $1::$3 }
 
 expr_eof:
   | expr EOF        { $1 }

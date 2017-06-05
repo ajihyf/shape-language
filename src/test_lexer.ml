@@ -16,7 +16,7 @@ let test_cases = [
   ("let fun in some:forall and1 1and or not if then else true false 13452369",
    OK [LET; FUN; IN; SOME; COLON; FORALL; IDENT "and1"; INT 1; AND; OR; NOT; IF;
   THEN; ELSE; TRUE; FALSE; INT 13452369]);
-(";", Fail);
+("#", Fail);
 ("{s1,s2}", OK [LBRACE; IDENT "s1"; COMMA; IDENT "s2"; RBRACE]);
 ("{$s1,s2}", OK [LBRACE; DOLLAR; IDENT "s1"; COMMA; IDENT "s2"; RBRACE]);
 ("rect(1,2,s1,s4)", OK [RECT; LPAREN; INT 1; COMMA; INT 2; COMMA; IDENT "s1"; COMMA; IDENT "s4"; RPAREN]);
