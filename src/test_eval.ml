@@ -44,6 +44,7 @@ let test_cases = [  ("3 + 2", OK(SInt 5));
      ") in {$eyes(300),triangle(300,50,250,100,350,100)}",
      OK(SShape([SShape([SRect(SInt 140, SInt 200, SInt 80, SInt 40); SRect(SInt 380, SInt 200, SInt 80, SInt 40)],true)
        ;STriangle(SInt 300, SInt 50, SInt 250, SInt 100, SInt 350, SInt 100)],true)));
+    ("let a = 100 in circle(300, 100, 200)", OK(SCircle(SInt 300, SInt 100, SInt 200)));
 ]
 
 
