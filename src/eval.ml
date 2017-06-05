@@ -94,15 +94,16 @@ let rec eval1 ctx t =
     print_newline();
     print_newline();*)
     match t with
+      t when isval t -> t
     | SVar(name) ->
         (*print_endline (name ^ "  var");*)
         let ret = Ctx.lookup name ctx in
           if isval ret then ret else (eval1 ctx ret)
     | SIf(SBool(true), t2, t3) ->
         (*print_endline ("*** if val ***\n");*)
-        if isval t2 then t2 else eval1 ctx t2
+        eval1 ctx t2
     | SIf(SBool(false), t2, t3) ->
-        if isval t3 then t3 else eval1 ctx t3
+        eval1 ctx t3
     | SIf(t1, t2, t3) ->
         (*print_endline ("*** if term ***\n");*)
         let t1' = eval1 ctx t1 in
@@ -226,5 +227,6 @@ let rec eval1 ctx t =
 let rec eval ctx t =
     try
         let t' = eval1 ctx t in
-          (*print_string "eval again\n";*) eval ctx t'
+          (*print_string "eval again\n";*)
+          if isval t' then t' else eval ctx t'
     with (Error "no rule to apply") -> t
