@@ -26,6 +26,8 @@ let rec isval t =
     | STriangle(t1, t2, t3, t4, t5, t6) ->
         (isval t1) && (isval t2) && (isval t3)
         && (isval t4) && (isval t5) && (isval t6)
+    | SLine(t1, t2, t3, t4) ->
+        (isval t1) && (isval t2) && (isval t3) && (isval t4)
     | SCircle(t1, t2, t3) ->
         (isval t1) && (isval t2) && (isval t3)
     | SShape(t1, any) ->
@@ -96,23 +98,29 @@ let rec eval1 ctx t =
         (*print_endline (name ^ "  var");*)
         let ret = Ctx.lookup name ctx in
           if isval ret then ret else (eval1 ctx ret)
-    | SIf(SBool(v), t2, t3) ->
-        if v then
-          if isval t2 then t2 else eval1 ctx t2
-        else if isval t3 then t3 else eval1 ctx t3
+    | SIf(SBool(true), t2, t3) ->
+        (*print_endline ("*** if val ***\n");*)
+        if isval t2 then t2 else eval1 ctx t2
+    | SIf(SBool(false), t2, t3) ->
+        if isval t3 then t3 else eval1 ctx t3
     | SIf(t1, t2, t3) ->
+        (*print_endline ("*** if term ***\n");*)
         let t1' = eval1 ctx t1 in
             eval1 ctx (SIf(t1', t2, t3))
     | SLet(t1, t2, t3) when isval t2 ->
+        (*print_endline ("*** let val ***\n");*)
         let new_ctx = Ctx.extend t1 t2 ctx in
             eval1 new_ctx t3
     | SLet(t1, t2, t3) ->
+        (*print_endline ("*** let term ***\n");*)
         let t2' = eval1 ctx t2 in
             eval1 ctx (SLet(t1, t2', t3))
     | SLetRec(t1, t2, t3) when isval t2 ->
+        (*print_endline ("*** let rec val ***\n");*)
         let new_ctx = Ctx.extend t1 t2 ctx in
             eval1 new_ctx t3
     | SLetRec(t1, t2, t3) ->
+        (*print_endline ("*** let rec term ***\n");*)
         let t2' = eval1 ctx t2 in
             eval1 ctx (SLet(t1, t2', t3))
     | SCall(SVar(name), t2) when (not (list_isval t2)) ->
@@ -138,45 +146,73 @@ let rec eval1 ctx t =
             | _ -> raise (Error "parameter of +/- is not int"))
          | _ -> raise (Error "parameter num of +/- is not 2"))
     | SCall(SVar(name), t2) ->
+        (*print_endline ("*** call function ***\n");*)
         (match Ctx.lookup name ctx with
-          SFun(param_list, _, exp) -> eval1 ctx (beta_reduction ctx param_list t2 exp)
+          SFun(param_list, _, exp) ->
+            eval1 ctx (beta_reduction ctx param_list t2 exp)
         | _ -> raise (Error "call an undefined function"))
     | SCast(t1, t2, t3) when isval t1 -> t1
     | SCast(t1, t2, t3) ->
         let t1' = eval1 ctx t1 in
             eval1 ctx (SCast(t1', t2, t3))
     | SRect(t1, t2, t3, t4) when (not (isval t1)) ->
-        let t1' = eval1 ctx t1 in SRect(t1', t2, t3, t4)
+        let t1' = eval1 ctx t1 in
+          let ret = SRect(t1', t2, t3, t4) in
+            if isval ret then ret else (eval1 ctx ret)
     | SRect(t1, t2, t3, t4) when (not (isval t2)) ->
-        let t2' = eval1 ctx t2 in SRect(t1, t2', t3, t4)
+        let t2' = eval1 ctx t2 in
+          let ret = SRect(t1, t2', t3, t4) in
+            if isval ret then ret else (eval1 ctx ret)
     | SRect(t1, t2, t3, t4) when (not (isval t3)) ->
-        let t3' = eval1 ctx t3 in SRect(t1, t2, t3', t4)
+        let t3' = eval1 ctx t3 in
+          let ret = SRect(t1, t2, t3', t4) in
+            if isval ret then ret else (eval1 ctx ret)
     | SRect(t1, t2, t3, t4) when (not (isval t4)) ->
         let t4' = eval1 ctx t4 in SRect(t1, t2, t3, t4')
     | SLine(t1, t2, t3, t4) when (not (isval t1)) ->
-        let t1' = eval1 ctx t1 in SLine(t1', t2, t3, t4)
+        let t1' = eval1 ctx t1 in
+          let ret = SLine(t1', t2, t3, t4) in
+            if isval ret then ret else (eval1 ctx ret)
     | SLine(t1, t2, t3, t4) when (not (isval t2)) ->
-        let t2' = eval1 ctx t2 in SLine(t1, t2', t3, t4)
+        let t2' = eval1 ctx t2 in
+          let ret = SLine(t1, t2', t3, t4) in
+            if isval ret then ret else (eval1 ctx ret)
     | SLine(t1, t2, t3, t4) when (not (isval t3)) ->
-        let t3' = eval1 ctx t3 in SLine(t1, t2, t3', t4)
+        let t3' = eval1 ctx t3 in
+          let ret = SLine(t1, t2, t3', t4) in
+            if isval ret then ret else (eval1 ctx ret)
     | SLine(t1, t2, t3, t4) when (not (isval t4)) ->
         let t4' = eval1 ctx t4 in SLine(t1, t2, t3, t4')
     | STriangle(t1, t2, t3, t4, t5, t6) when (not (isval t1)) ->
-        let t1' = eval1 ctx t1 in STriangle(t1', t2, t3, t4, t5, t6)
+        let t1' = eval1 ctx t1 in
+          let ret = STriangle(t1', t2, t3, t4, t5, t6) in
+            if isval ret then ret else (eval1 ctx ret)
     | STriangle(t1, t2, t3, t4, t5, t6) when (not (isval t2)) ->
-        let t2' = eval1 ctx t2 in STriangle(t1, t2', t3, t4, t5, t6)
+        let t2' = eval1 ctx t2 in
+          let ret = STriangle(t1, t2', t3, t4, t5, t6) in
+            if isval ret then ret else (eval1 ctx ret)
     | STriangle(t1, t2, t3, t4, t5, t6) when (not (isval t3)) ->
-        let t3' = eval1 ctx t3 in STriangle(t1, t2, t3', t4, t5, t6)
+        let t3' = eval1 ctx t3 in
+          let ret = STriangle(t1, t2, t3', t4, t5, t6) in
+            if isval ret then ret else (eval1 ctx ret)
     | STriangle(t1, t2, t3, t4, t5, t6) when (not (isval t4)) ->
-        let t4' = eval1 ctx t4 in STriangle(t1, t2, t3, t4', t5, t6)
+        let t4' = eval1 ctx t4 in
+          let ret = STriangle(t1, t2, t3, t4', t5, t6) in
+            if isval ret then ret else (eval1 ctx ret)
     | STriangle(t1, t2, t3, t4, t5, t6) when (not (isval t5)) ->
-        let t5' = eval1 ctx t1 in STriangle(t1, t2, t3, t4, t5', t6)
+        let t5' = eval1 ctx t1 in
+          let ret = STriangle(t1, t2, t3, t4, t5', t6) in
+            if isval ret then ret else (eval1 ctx ret)
     | STriangle(t1, t2, t3, t4, t5, t6) when (not (isval t6)) ->
         let t6' = eval1 ctx t6 in STriangle(t1, t2, t3, t4, t5, t6')
     | SCircle(t1, t2, t3) when (not (isval t1)) ->
-        let t1' = eval1 ctx t1 in SCircle(t1', t2, t3)
+        let t1' = eval1 ctx t1 in
+          let ret = SCircle(t1', t2, t3) in
+            if isval ret then ret else (eval1 ctx ret)
     | SCircle(t1, t2, t3) when (not (isval t2)) ->
-        let t2' = eval1 ctx t2 in SCircle(t1, t2', t3)
+        let t2' = eval1 ctx t2 in
+          let ret  = SCircle(t1, t2', t3) in
+            if isval ret then ret else (eval1 ctx ret)
     | SCircle(t1, t2, t3) when (not (isval t3)) ->
         let t3' = eval1 ctx t3 in SCircle(t1, t2, t3')
     | SShape(t1, any) when (not (list_isval t1)) ->
@@ -184,9 +220,7 @@ let rec eval1 ctx t =
           (match t' with
             [] -> []
           | x::rest when (not (isval x))-> (eval1 ctx x)::(eval_shapes rest)
-          | x::rest -> x::(eval_shapes rest)) in
-        let tmp = (SShape((eval_shapes t1), any)) in
-          if isval tmp then tmp else (eval1 ctx tmp)
+          | x::rest -> x::(eval_shapes rest)) in SShape((eval_shapes t1), any)
     | _ -> raise (Error "no rule to apply")
 
 let rec eval ctx t =

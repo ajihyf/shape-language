@@ -32,6 +32,18 @@ let test_cases = [  ("3 + 2", OK(SInt 5));
    OK(SShape([SShape([SShape([SRect(SInt 5, SInt 5, SInt 2, SInt 2); SRect(SInt 4, SInt 4, SInt 1, SInt 1)],false);
    SRect(SInt 3, SInt 3, SInt 1, SInt 1)], false);
    SRect(SInt 2, SInt 2, SInt 1, SInt 1)], false)));
+   ("let rec f = fun(a: int | a >= 0 and a <= 300):
+        (r: shape | (left(r)==a and top(r)==a) and (width(r)<=500-a and height(r)<=500-a)) -> (
+    let ret = rect(a, a, 50, 50) in
+    if a < 100 then {$ret, f(a + 50)} else line(a, a, a, a)
+    ) in f(50)", OK(SShape([SRect(SInt 50, SInt 50, SInt 50, SInt 50);
+                            SLine(SInt 100, SInt 100, SInt 100, SInt 100)], true)));
+    ("let eyes = fun(centerx: int | centerx >= 160):" ^
+     "(r: shape | (left(r)==centerx-160 and width(r)==320) and (top(r)==200 and height(r)==40)) -> (" ^
+     "{$rect(centerx-160,200,80,40),rect(centerx+80,200,80,40)}" ^
+     ") in {$eyes(300),triangle(300,50,250,100,350,100)}",
+     OK(SShape([SShape([SRect(SInt 140, SInt 200, SInt 80, SInt 40); SRect(SInt 380, SInt 200, SInt 80, SInt 40)],true)
+       ;STriangle(SInt 300, SInt 50, SInt 250, SInt 100, SInt 350, SInt 100)],true)));
 ]
 
 
