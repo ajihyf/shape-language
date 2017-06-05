@@ -26,6 +26,12 @@ let test_cases = [  ("3 + 2", OK(SInt 5));
                SRect(SInt 2, SInt 2, SInt 2, SInt 1)], false)));
   ("let f = fun(x: Int->Int) -> x in let g = fun(x: Int) -> x + 1 in let m = f(g) in m(1)", OK(SInt 2));
   ("let rec f = fun(x: Int->Int) -> x in let g = fun(x: Int) -> x + 1 in let m = f(g) in m(1)", OK(SInt 2));
+  ("let rec f = fun(s: shape, a: int | a > 2 and a == top(s)): (r: shape | top(r) > 0) -> " ^
+   " (let ret = {s, rect(a - 1, a - 1, 1, 1)} in" ^
+   " if a > 3 then f(ret, a - 1) else ret) in let final = f(rect(5, 5, 2, 2), 5) in final",
+   OK(SShape([SShape([SShape([SRect(SInt 5, SInt 5, SInt 2, SInt 2); SRect(SInt 4, SInt 4, SInt 1, SInt 1)],false);
+   SRect(SInt 3, SInt 3, SInt 1, SInt 1)], false);
+   SRect(SInt 2, SInt 2, SInt 1, SInt 1)], false)));
 ]
 
 

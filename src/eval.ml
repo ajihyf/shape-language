@@ -94,7 +94,8 @@ let rec eval1 ctx t =
     match t with
     | SVar(name) ->
         (*print_endline (name ^ "  var");*)
-        Ctx.lookup name ctx
+        let ret = Ctx.lookup name ctx in
+          if isval ret then ret else (eval1 ctx ret)
     | SIf(SBool(v), t2, t3) ->
         if v then
           if isval t2 then t2 else eval1 ctx t2
@@ -107,13 +108,13 @@ let rec eval1 ctx t =
             eval1 new_ctx t3
     | SLet(t1, t2, t3) ->
         let t2' = eval1 ctx t2 in
-            SLet(t1, t2', t3)
+            eval1 ctx (SLet(t1, t2', t3))
     | SLetRec(t1, t2, t3) when isval t2 ->
         let new_ctx = Ctx.extend t1 t2 ctx in
             eval1 new_ctx t3
     | SLetRec(t1, t2, t3) ->
         let t2' = eval1 ctx t2 in
-            SLet(t1, t2', t3)
+            eval1 ctx (SLet(t1, t2', t3))
     | SCall(SVar(name), t2) when (not (list_isval t2)) ->
         let rec eval_params t2' =
             (match t2' with
@@ -143,7 +144,7 @@ let rec eval1 ctx t =
     | SCast(t1, t2, t3) when isval t1 -> t1
     | SCast(t1, t2, t3) ->
         let t1' = eval1 ctx t1 in
-            SCast(t1', t2, t3)
+            eval1 ctx (SCast(t1', t2, t3))
     | SRect(t1, t2, t3, t4) when (not (isval t1)) ->
         let t1' = eval1 ctx t1 in SRect(t1', t2, t3, t4)
     | SRect(t1, t2, t3, t4) when (not (isval t2)) ->
@@ -191,5 +192,5 @@ let rec eval1 ctx t =
 let rec eval ctx t =
     try
         let t' = eval1 ctx t in
-          eval ctx t'
+          (*print_string "eval again\n";*) eval ctx t'
     with (Error "no rule to apply") -> t
