@@ -58,11 +58,14 @@ let process_file f =
       let t_expr = Infer.infer_expr Core.plain_env 0 constructed_expr in
       Refined.check_expr t_expr;
       let eval_result = Eval.eval Eval.Ctx.StringMap.empty constructed_expr in
-      (try Draw.draw eval_result with Draw.Error ->
-      print_endline ((string_of_s_expr eval_result) ^ ": " ^ (string_of_t_ty (Infer.generalize (-1) t_expr.ty))));
       (match bind_name with
-        | Some name -> ((name, eval_result)::bound_tuple_list_rev, i + 1)
-        | None -> default)
+        | Some name ->
+          print_endline (name ^ ": " ^ (string_of_t_ty (Infer.generalize (-1) t_expr.ty)));
+          ((name, eval_result)::bound_tuple_list_rev, i + 1)
+        | None -> 
+          (try Draw.draw eval_result with Draw.Error ->
+          print_endline ((string_of_s_expr eval_result) ^ ": " ^ (string_of_t_ty (Infer.generalize (-1) t_expr.ty))));
+          default)
     with 
       | Infer.Error msg ->
         print_endline ("Infer error in statement " ^ (string_of_int i) ^ ": " ^ msg); default
